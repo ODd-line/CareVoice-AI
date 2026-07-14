@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="CareVoice secure room portal">
+  <meta name="theme-color" content="#00a887">
+  <title>CareVoice — Secure Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+HK:wght@400;500;700;800&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css?v=56">
+</head>
+<body>
+  <main class="container room-portal-page" role="main">
+    <section class="secure-room-panel room-join-panel" aria-label="CareVoice secure room join portal">
+      <div class="secure-room-copy">
+        <p class="section-eyebrow">CareVoice Secure Room</p>
+        <h1 id="roomPortalTitle">Join secure care room</h1>
+        <p id="roomPortalCopy">This room link opens a role-scoped CareVoice workspace. Sign in with Google from the correct role page before sharing patient information.</p>
+        <div class="assigned-team-grid" aria-label="Room access summary">
+          <article><strong id="roomPortalId">CV-ROOM</strong><span>Room</span><p>Room-scoped invite for patient, family, nurse, and doctor workflows.</p></article>
+          <article><strong id="roomPortalRole">Member</strong><span>Requested Role</span><p>Access still depends on the signed-in Google account and saved CareVoice role.</p></article>
+          <article><strong>Encrypted Invite</strong><span>Privacy</span><p>The token should be rotated after discharge, staff changes, or accidental sharing.</p></article>
+        </div>
+      </div>
+      <div class="secure-qr-card">
+        <strong>Room Token</strong>
+        <code id="roomPortalToken">Loading...</code>
+        <a id="roomPortalContinue" class="primary-link" href="member.html">Continue to workspace</a>
+        <a class="secondary-btn" href="index.html#top">Back to CareVoice Login</a>
+        <p class="chart-footnote">Phone users: open the matching role workspace, sign in, and CareVoice will show only approved tools for that account.</p>
+      </div>
+    </section>
+  </main>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var room = params.get("room") || "CV-ROOM-WONG-7821";
+      var token = params.get("token") || "cv_enc_v1_7K9D-2Q4M-88HX";
+      var role = params.get("role") || "member";
+      var roleRoutes = { patient: "patient.html", family: "family.html", staff: "staff.html", member: "member.html" };
+      var roleLabels = { patient: "Patient", family: "Family Member", staff: "Hospital Staff", member: "CareVoice Member" };
+      document.getElementById("roomPortalTitle").textContent = "Join " + room;
+      document.getElementById("roomPortalId").textContent = room;
+      document.getElementById("roomPortalToken").textContent = token;
+      document.getElementById("roomPortalRole").textContent = roleLabels[role] || "CareVoice Member";
+      document.getElementById("roomPortalContinue").setAttribute("href", roleRoutes[role] || "member.html");
+    })();
+  </script>
+</body>
+</html>
