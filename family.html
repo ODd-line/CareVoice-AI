@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+HK:wght@400;500;700;800&family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=Sora:wght@600;700&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=62">
+  <link rel="stylesheet" href="style.css?v=64">
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -264,11 +264,10 @@
         </ul>
       </div>
       <div class="secure-qr-card" aria-label="Family QR room invite">
-        <img class="qr-code-image" data-room-id="CV-ROOM-WONG-7821" data-room-token="cv_enc_v1_7K9D-2Q4M-88HX" data-room-role="family" alt="QR code for family room invite">
-        <strong>Scan to Join Room</strong>
-        <code>cv_enc_v1_7K9D-2Q4M-88HX</code>
-        <a class="secondary-btn" data-room-id="CV-ROOM-WONG-7821" data-room-token="cv_enc_v1_7K9D-2Q4M-88HX" data-room-role="family" href="room.html?room=CV-ROOM-WONG-7821&token=cv_enc_v1_7K9D-2Q4M-88HX&role=family">Open family portal link</a>
-        <p class="chart-footnote">Encrypted invite. Family sees only approved updates.</p>
+        <strong>Authenticated Room Access</strong>
+        <p>Static pages cannot safely issue room credentials. Ask authorized staff for a short-lived invitation after signing in.</p>
+        <a class="secondary-btn" href="/family/dashboard">Open authenticated family workspace</a>
+        <p class="chart-footnote">No patient-room secret is stored in this static page.</p>
       </div>
     </section>
 
@@ -896,6 +895,6 @@
     };
   </script>
   <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-  <script src="app.js?v=62"></script>
+  <script src="app.js?v=64"></script>
 </body>
 </html>

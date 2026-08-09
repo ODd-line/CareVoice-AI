@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Interactive 3D concept model of the CareVoice Micro bedside controller.">
+  <meta name="theme-color" content="#f2f4ed">
+  <title>CareVoice Micro — 3D Product Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&amp;family=Sora:wght@600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="carevoice-micro.css?v=64">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body class="micro-page">
+  <header class="micro-header">
+    <a class="micro-brand" href="index.html" aria-label="Back to CareVoice">
+      <span class="micro-brand-mark">CV</span>
+      <span><strong>CareVoice Micro</strong><small>3D Product Lab</small></span>
+    </a>
+    <div class="micro-header-actions">
+      <span id="renderStatus" class="render-status" role="status">Loading model</span>
+      <a class="micro-back" href="index.html">Back to platform</a>
+    </div>
+  </header>
+
+  <main class="micro-stage" aria-label="Interactive CareVoice Micro product model">
+    <div id="microCanvas" class="micro-canvas" aria-label="Drag to rotate the 3D CareVoice Micro controller"></div>
+
+    <section class="micro-intro" aria-labelledby="microTitle">
+      <p class="micro-kicker">Bedside control, made tangible</p>
+      <h1 id="microTitle">CareVoice<br>Micro</h1>
+      <p>A tactile care controller for voice assistance, verified medication reminders, family connection, social games, and staff requests.</p>
+      <div class="micro-status-line">
+        <span id="modeDot" class="mode-dot"></span>
+        <span id="modeLabel">Ready for patient</span>
+      </div>
+    </section>
+
+    <aside class="micro-specs" aria-label="Product specifications">
+      <p class="micro-spec-index">CV-M / 01</p>
+      <dl>
+        <div><dt>Connection</dt><dd>Bluetooth / USB-C</dd></div>
+        <div><dt>Local hub</dt><dd>Raspberry Pi</dd></div>
+        <div><dt>Controls</dt><dd>8 keys, dial, joystick</dd></div>
+        <div><dt>Feedback</dt><dd>RGB, sound, vibration</dd></div>
+        <div><dt>Profiles</dt><dd>NFC / QR</dd></div>
+      </dl>
+    </aside>
+
+    <div class="micro-controls" aria-label="3D viewer controls">
+      <div class="micro-segmented" role="group" aria-label="Product status simulation">
+        <button class="mode-button is-active" type="button" data-mode="ready">Ready</button>
+        <button class="mode-button" type="button" data-mode="listening">Listening</button>
+        <button class="mode-button" type="button" data-mode="medication">Medication</button>
+        <button class="mode-button" type="button" data-mode="help">Help sent</button>
+        <button class="mode-button" type="button" data-mode="game">Game invite</button>
+      </div>
+      <div class="micro-view-actions">
+        <button id="rotateButton" class="icon-action is-active" type="button" aria-pressed="true" title="Toggle automatic rotation">Rotate</button>
+        <button id="explodeButton" class="icon-action" type="button" aria-pressed="false" title="Toggle exploded view">Explode</button>
+        <button id="resetViewButton" class="icon-action" type="button" title="Reset camera view">Reset</button>
+      </div>
+      <p class="micro-hint">Drag to orbit · Scroll or pinch to zoom · Select a key to test it</p>
+    </div>
+
+    <div id="keyReadout" class="key-readout" aria-live="polite">
+      <span>Selected control</span>
+      <strong>CareVoice</strong>
+      <p>Press to begin a voice check-in.</p>
+    </div>
+  </main>
+
+  <noscript>This interactive product model requires JavaScript.</noscript>
+  <script type="module" src="carevoice-micro.js?v=64"></script>
+</body>
+</html>

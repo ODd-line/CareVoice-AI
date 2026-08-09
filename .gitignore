@@ -1,0 +1,13 @@
+node_modules/
+.next/
+.npm-cache/
+.venv/
+.DS_Store
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+*.zip
+carevoice-android/.gradle/
+carevoice-android/build/
+carevoice-android/app/build/

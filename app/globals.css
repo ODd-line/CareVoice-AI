@@ -1,0 +1,49 @@
+@import "react-big-calendar/lib/css/react-big-calendar.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 42 31% 96%;
+  --foreground: 214 38% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 214 38% 15%;
+  --primary: 176 79% 24%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 31 80% 90%;
+  --secondary-foreground: 24 48% 20%;
+  --muted: 44 22% 90%;
+  --muted-foreground: 214 13% 41%;
+  --accent: 199 62% 88%;
+  --accent-foreground: 204 72% 22%;
+  --destructive: 0 76% 44%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 40 18% 82%;
+  --input: 40 18% 82%;
+  --ring: 176 79% 24%;
+  --radius: 0.5rem;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.healthcare-grid {
+  background-image: linear-gradient(rgba(8, 71, 65, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(8, 71, 65, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.rbc-calendar {
+  min-height: 420px;
+  font-family: inherit;
+}
+
+.rbc-event {
+  background: hsl(var(--primary));
+  border-radius: 6px;
+}

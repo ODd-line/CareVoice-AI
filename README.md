@@ -1,6 +1,8 @@
 # 🎤 CareVoice AI
 Pilot-ready voice triage and caregiver logging tool for elderly care. Built for HKICT Awards 2026 (Student Innovation Award).
 
+> **DEMO ONLY - NOT HIPAA COMPLIANT.** The static application uses browser Web Crypto AES-GCM for prototype device storage. It does not provide production key management, healthcare compliance, or a server authorization boundary. Do not enter real patient data.
+
 ## ✅ What is actually doable
 - Voice capture in Cantonese and English
 - Automatic categorization for medication, symptom, and emergency mentions
@@ -19,6 +21,18 @@ Pilot-ready voice triage and caregiver logging tool for elderly care. Built for 
 2. Open folder in VS Code
 3. Right-click `index.html` → "Open with Live Server"
 4. Test voice input in Chrome/Edge (requires HTTPS in production)
+
+## Next.js authentication environment
+
+The server-backed Next.js application requires the variables listed in `.env.example`. Configure the same names in Vercel Project Settings:
+
+- `AUTH_SECRET`: long random value used to sign Auth.js sessions and room invitations.
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Google OAuth server credentials.
+- `CAREVOICE_STAFF_EMAILS`: comma-separated allowlist for accounts permitted to select the staff role.
+
+Patient and family roles may be selected by authenticated users. Staff access is denied unless the signed-in email is in the server-side allowlist. Room invitations are issued only by staff, expire after ten minutes, and are bound to the recipient email and intended role.
+
+The static prototype retains legacy stored role values (`hospital_staff` and `family_member`) and maps them to the canonical server roles (`staff` and `family`) at its compatibility boundary. New server authorization code must use the canonical roles from `lib/roles.ts`.
 
 ## 🔑 Firebase Setup (Free)
 1. Go to [console.firebase.google.com](https://console.firebase.google.com)

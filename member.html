@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+HK:wght@400;500;700;800&family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=Sora:wght@600;700&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=62">
+  <link rel="stylesheet" href="style.css?v=64">
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -72,15 +72,15 @@
       </div>
       <div class="profile-entry-actions role-photo-actions" aria-label="Choose CareVoice portal before login">
         <button id="portalChoosePatientBtn" class="role-photo-card" type="button">
-          <img src="https://images.unsplash.com/photo-1581579438747-104c53d7fbc4?auto=format&fit=crop&w=720&q=80" alt="Patient using health support">
+          <img src="assets/role-patient.svg" alt="Patient using health support">
           <span class="role-photo-copy"><strong>Patient</strong><small>Daily care, SOS, health log, assistant</small></span>
         </button>
         <button id="portalChooseHospitalStaffBtn" class="role-photo-card" type="button">
-          <img src="https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&w=720&q=80" alt="Medical staff member in a clinical workspace">
+          <img src="assets/role-staff.svg" alt="Medical staff member in a clinical workspace">
           <span class="role-photo-copy"><strong>Hospital Staff</strong><small>Triage, patient rooms, roster, hospital tools</small></span>
         </button>
         <button id="portalChooseFamilyMemberBtn" class="role-photo-card" type="button">
-          <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=720&q=80" alt="Family caregiver helping an older adult">
+          <img src="assets/role-family.svg" alt="Family caregiver helping an older adult">
           <span class="role-photo-copy"><strong>Family Member</strong><small>Family alerts, messages, calendar, updates</small></span>
         </button>
       </div>
@@ -149,15 +149,15 @@
           <h3>Portal Pages</h3>
           <div class="member-role-photo-grid" aria-label="Quick role chooser">
             <button id="choosePatientBtn" class="member-role-card" type="button">
-              <img src="https://images.unsplash.com/photo-1581579438747-104c53d7fbc4?auto=format&fit=crop&w=640&q=80" alt="Patient using health support">
+              <img src="assets/role-patient.svg" alt="Patient using health support">
               <span><strong>I am Patient</strong><small>Open patient daily care, SOS, health log, and assistant.</small></span>
             </button>
             <button id="chooseHospitalStaffBtn" class="member-role-card" type="button">
-              <img src="https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&w=640&q=80" alt="Hospital staff member">
+              <img src="assets/role-staff.svg" alt="Hospital staff member">
               <span><strong>I am Hospital Staff</strong><small>Open clinical triage, roster, rooms, and hospital account tools.</small></span>
             </button>
             <button id="chooseFamilyMemberBtn" class="member-role-card" type="button">
-              <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=640&q=80" alt="Family caregiver">
+              <img src="assets/role-family.svg" alt="Family caregiver">
               <span><strong>I am Family Member</strong><small>Open caregiver calendar, messages, alerts, and approved updates.</small></span>
             </button>
           </div>
@@ -850,6 +850,6 @@
     };
   </script>
   <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-  <script src="app.js?v=62"></script>
+  <script src="app.js?v=64"></script>
 </body>
 </html>

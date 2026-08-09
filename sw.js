@@ -1,4 +1,4 @@
-const CACHE_NAME = "carevoice-v62";
+const CACHE_NAME = "carevoice-v64";
 const ASSETS = [
   "/",
   "/index.html",
@@ -9,10 +9,16 @@ const ASSETS = [
   "/family.html",
   "/market-insights.html",
   "/caretaker.html",
+  "/carevoice-micro.html",
+  "/carevoice-micro.css?v=64",
+  "/carevoice-micro.js?v=64",
   "/style.css",
-  "/style.css?v=62",
+  "/style.css?v=64",
   "/app.js",
-  "/app.js?v=62",
+  "/app.js?v=64",
+  "/assets/role-patient.svg",
+  "/assets/role-staff.svg",
+  "/assets/role-family.svg",
   "/market-insights.js",
   "/manifest.json",
   "/firebase-config.js"

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+HK:wght@400;500;700;800&family=Sora:wght@600;700&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=62">
+  <link rel="stylesheet" href="style.css?v=64">
 </head>
 <body>
   <main class="container room-portal-page" role="main">
@@ -22,13 +22,13 @@
         <div class="assigned-team-grid" aria-label="Room access summary">
           <article><strong id="roomPortalId">CV-ROOM</strong><span>Room</span><p>Room-scoped invite for patient, family, nurse, and doctor workflows.</p></article>
           <article><strong id="roomPortalRole">Member</strong><span>Requested Role</span><p>Access still depends on the signed-in Google account and saved CareVoice role.</p></article>
-          <article><strong>Encrypted Invite</strong><span>Privacy</span><p>The token should be rotated after discharge, staff changes, or accidental sharing.</p></article>
+          <article><strong>Server Validation Required</strong><span>Privacy</span><p>Static room links cannot verify identity, expiry, role, or consent.</p></article>
         </div>
       </div>
       <div class="secure-qr-card">
-        <strong>Room Token</strong>
-        <code id="roomPortalToken">Loading...</code>
-        <a id="roomPortalContinue" class="primary-link" href="member.html">Continue to workspace</a>
+        <strong>Authentication Required</strong>
+        <p>Open the server-backed CareVoice application. Authorized staff can issue a short-lived signed invitation there.</p>
+        <a class="primary-link" href="/">Continue to authenticated app</a>
         <a class="secondary-btn" href="index.html#top">Back to CareVoice Login</a>
         <p class="chart-footnote">Phone users: open the matching role workspace, sign in, and CareVoice will show only approved tools for that account.</p>
       </div>
@@ -38,15 +38,11 @@
     (function () {
       var params = new URLSearchParams(window.location.search);
       var room = params.get("room") || "CV-ROOM-WONG-7821";
-      var token = params.get("token") || "cv_enc_v1_7K9D-2Q4M-88HX";
       var role = params.get("role") || "member";
-      var roleRoutes = { patient: "patient.html", family: "family.html", staff: "staff.html", member: "member.html" };
       var roleLabels = { patient: "Patient", family: "Family Member", staff: "Hospital Staff", member: "CareVoice Member" };
       document.getElementById("roomPortalTitle").textContent = "Join " + room;
       document.getElementById("roomPortalId").textContent = room;
-      document.getElementById("roomPortalToken").textContent = token;
       document.getElementById("roomPortalRole").textContent = roleLabels[role] || "CareVoice Member";
-      document.getElementById("roomPortalContinue").setAttribute("href", roleRoutes[role] || "member.html");
     })();
   </script>
 </body>

@@ -1,4 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const prototypeBanner = document.createElement("aside");
+  prototypeBanner.className = "prototype-security-banner";
+  prototypeBanner.setAttribute("role", "note");
+  const prototypeTitle = document.createElement("strong");
+  prototypeTitle.textContent = "DEMO ONLY - NOT HIPAA COMPLIANT";
+  const prototypeCopy = document.createElement("span");
+  prototypeCopy.textContent = " Browser AES-GCM is prototype device protection, not production healthcare encryption or authorization.";
+  prototypeBanner.append(prototypeTitle, prototypeCopy);
+  document.body.prepend(prototypeBanner);
+
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker
       .getRegistrations()
@@ -273,6 +283,15 @@ document.addEventListener("DOMContentLoaded", () => {
     patient: "patient.html",
     family_member: "family.html"
   };
+  const canonicalRoleByStaticRole = {
+    hospital_staff: "staff",
+    patient: "patient",
+    family_member: "family"
+  };
+
+  function getCanonicalRole(role) {
+    return canonicalRoleByStaticRole[String(role || "")] || "patient";
+  }
   let currentMemberProfile = null;
   let hospitalAccounts = [];
   let currentHospitalMembership = null;
@@ -360,6 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pendingHomeRoleChoice = String(role || "").trim();
     try {
       if (pendingHomeRoleChoice) {
+        sessionStorage.setItem(pendingRoleChoiceKey, pendingHomeRoleChoice);
         localStorage.setItem(pendingRoleChoiceKey, pendingHomeRoleChoice);
       }
     } catch (err) {
@@ -370,7 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function getPendingRoleChoice() {
     if (pendingHomeRoleChoice) return pendingHomeRoleChoice;
     try {
-      pendingHomeRoleChoice = localStorage.getItem(pendingRoleChoiceKey) || "";
+      pendingHomeRoleChoice = sessionStorage.getItem(pendingRoleChoiceKey) || localStorage.getItem(pendingRoleChoiceKey) || "";
     } catch (err) {
       pendingHomeRoleChoice = "";
     }
@@ -380,6 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function clearPendingRoleChoice() {
     pendingHomeRoleChoice = "";
     try {
+      sessionStorage.removeItem(pendingRoleChoiceKey);
       localStorage.removeItem(pendingRoleChoiceKey);
     } catch (err) {
       // ignore
@@ -420,9 +441,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function encryptStringWithSeed(plainText, seed, prefix = sensitiveStoragePrefix) {
-    if (!window.crypto || !window.crypto.subtle) return String(plainText || "");
+    if (!window.crypto || !window.crypto.subtle) throw new Error("Secure browser storage is unavailable.");
     const key = await deriveAesKeyFromSeed(seed);
-    if (!key) return String(plainText || "");
+    if (!key) throw new Error("Could not initialize secure browser storage.");
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
     const encoded = new TextEncoder().encode(String(plainText || ""));
     const cipherBuffer = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
@@ -706,7 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const rows = await Promise.all(secureChatRecords.slice(-20).map(async (record) => {
       const plain = await decryptSecureChatText(user, record.encryptedText);
       const time = record.createdAtMs ? new Date(record.createdAtMs).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "now";
-      return `<article class="secure-chat-message"><strong>${escapeHtml(record.senderName || "CareVoice Member")}</strong><p>${escapeHtml(plain || "[Encrypted message unavailable]")}</p><small>${escapeHtml(time)} • encrypted at rest</small></article>`;
+      return `<article class="secure-chat-message"><strong>${escapeHtml(record.senderName || "CareVoice Member")}</strong><p>${escapeHtml(plain || "[Protected message unavailable]")}</p><small>${escapeHtml(time)} • locally protected demo storage</small></article>`;
     }));
     secureChatMessages.innerHTML = rows.length ? rows.join("") : '<p class="secure-chat-empty">No encrypted messages yet. Start with a care update.</p>';
     secureChatMessages.scrollTop = secureChatMessages.scrollHeight;
@@ -744,12 +765,12 @@ document.addEventListener("DOMContentLoaded", () => {
     loadSecureChatRecords(user);
     if (!secureChatRecords.length) {
       const roleLabel = currentMemberProfile && currentMemberProfile.role ? getMemberRoleLabel(currentMemberProfile.role) : "Member";
-      await addSecureChatMessage(user, `Secure room opened for ${roleLabel}. Messages are encrypted before local storage and cloud sync.`, "CareVoice System");
+      await addSecureChatMessage(user, `Demo room opened for ${roleLabel}. Browser protection is applied before local storage and cloud sync; production requires managed server-side keys.`, "CareVoice System");
       await addSecureChatMessage(user, "Care team channel ready: use this for patient updates, family questions, and handoff notes.", "CareVoice System");
     } else {
       await renderSecureChatMessages(user);
     }
-    if (secureChatStatus) secureChatStatus.textContent = `Room ${getSecureChatRoomId(user)} • encrypted message storage active.`;
+    if (secureChatStatus) secureChatStatus.textContent = `Room ${getSecureChatRoomId(user)} • local demo protection active.`;
   }
 
   function updateSessionNotificationBar(user) {
@@ -1174,29 +1195,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function buildRoomPortalUrl(roomId, token, role) {
-    const roomUrl = new URL("room.html", window.location.href);
-    roomUrl.searchParams.set("room", String(roomId || "CV-ROOM-WONG-7821"));
-    roomUrl.searchParams.set("token", String(token || "cv_enc_v1_7K9D-2Q4M-88HX"));
-    if (role) roomUrl.searchParams.set("role", String(role));
-    return roomUrl.toString();
-  }
-
-  function initRoomQrLinks() {
-    document.querySelectorAll("[data-room-id][data-room-token]").forEach((node) => {
-      const roomId = node.getAttribute("data-room-id") || "CV-ROOM-WONG-7821";
-      const token = node.getAttribute("data-room-token") || "cv_enc_v1_7K9D-2Q4M-88HX";
-      const role = node.getAttribute("data-room-role") || "member";
-      const roomUrl = buildRoomPortalUrl(roomId, token, role);
-      if (node.tagName.toLowerCase() === "a") {
-        node.setAttribute("href", roomUrl);
-      } else if (node.tagName.toLowerCase() === "img") {
-        node.setAttribute("src", `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(roomUrl)}`);
-        node.setAttribute("alt", `QR code for ${roomId}`);
-      }
-    });
-  }
-
   function refreshHospitalAccountUi(user) {
     if (!isMemberWorkspacePage()) return;
     const role = currentMemberProfile && currentMemberProfile.role ? String(currentMemberProfile.role) : "";
@@ -1260,6 +1258,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function getMemberProfileFromUi() {
     return {
       role: String(memberRoleSelect ? memberRoleSelect.value : "").trim(),
+      canonicalRole: getCanonicalRole(memberRoleSelect ? memberRoleSelect.value : ""),
       hospital: String(memberHospitalSelect ? memberHospitalSelect.value : "").trim(),
       hospitalOther: String(memberHospitalOtherInput ? memberHospitalOtherInput.value : "").trim(),
       updatedAt: Date.now()
@@ -1383,7 +1382,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateHospitalOtherVisibility();
   }
 
-  function chooseRoleAndRedirect(role) {
+  async function chooseRoleAndRedirect(role) {
     const user = window.auth && window.auth.currentUser ? window.auth.currentUser : null;
     if (!user) {
       setPendingRoleChoice(role);
@@ -1414,7 +1413,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateHospitalOtherVisibility();
 
     if (saveMemberProfileForUser(user)) {
-      loadMemberProfileForUser(user);
+      await saveMemberProfileRecordToFirestore(user, currentMemberProfile, "member_profile_setup").catch((err) => {
+        console.warn("Could not save selected role to Firestore before routing:", err);
+      });
+      await loadMemberProfileForUser(user);
       const unlocked = applyMemberOnboardingGate(user);
       refreshMemberTools();
       if (unlocked) {
@@ -4000,10 +4002,17 @@ html body {
       } else {
         actionableLogs.forEach((item) => {
           const li = document.createElement("li");
-          li.className = `triage-queue-item urgency-${item.urgency || "green"}`;
+          const urgency = ["red", "amber", "blue", "green"].includes(String(item.urgency)) ? String(item.urgency) : "green";
+          li.className = `triage-queue-item urgency-${urgency}`;
           const time = new Date(item.timestamp || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
           const reason = Array.isArray(item.reasons) && item.reasons.length ? item.reasons[0] : getCareActionForLog(item);
-          li.innerHTML = `<strong>${String(item.urgency || "green").toUpperCase()} • ${time}</strong><span>${reason}</span><small>${getCareActionForLog(item)}</small>`;
+          const heading = document.createElement("strong");
+          const detail = document.createElement("span");
+          const action = document.createElement("small");
+          heading.textContent = `${urgency.toUpperCase()} • ${time}`;
+          detail.textContent = String(reason || "Review required");
+          action.textContent = getCareActionForLog(item);
+          li.append(heading, detail, action);
           caregiverTriageQueue.appendChild(li);
         });
       }
@@ -6600,7 +6609,6 @@ html body {
   ]).finally(() => {
     refreshEvidence();
     refreshMemberTools();
-    initRoomQrLinks();
     renderFhirMappingPreview();
     renderExportHistory();
     refreshConsentStatus();
@@ -7365,7 +7373,7 @@ html body {
   if (guidedDemoBtn) {
     guidedDemoBtn.addEventListener("click", () => {
       const demoText = "我今日有啲頭暈，唔記得食血壓藥。";
-      if (transcriptBox) transcriptBox.innerHTML = `<p>🗣️ ${demoText}</p>`;
+      if (transcriptBox) transcriptBox.textContent = `🗣️ ${demoText}`;
       analyzeInput(demoText);
     });
   }
@@ -8235,7 +8243,7 @@ html body {
       privacy: {
         rawAudioStored: false,
         piiRedaction: "HKID, HK phone numbers, and email-like strings redacted before log storage/export",
-        encryption: "Local sensitive logs use Web Crypto AES-GCM where supported"
+        encryption: "Demo-only browser protection uses Web Crypto AES-GCM; production requires managed server-side keys"
       },
       fhirBundle: bundle,
       audit: localLogs.slice(-20).map((item) => ({

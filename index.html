@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+HK:wght@400;500;700;800&family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=Sora:wght@600;700&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=62">
+  <link rel="stylesheet" href="style.css?v=64">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -375,6 +375,7 @@
     <nav class="nav-links" aria-label="Primary">
       <a href="#professionals" data-i18n="nav.professionals">Professionals</a>
       <a href="#platform" data-i18n="nav.platform">Platform</a>
+      <a href="carevoice-micro.html">3D Product</a>
       <a href="#usageJourney" data-i18n="nav.journey">Journey</a>
       <a href="#market" data-i18n="nav.market">Market</a>
       <a href="#contact" data-i18n="nav.contact">Contact</a>
@@ -545,15 +546,15 @@
       </div>
       <div class="profile-entry-actions role-photo-actions" aria-label="Profile workspace shortcuts">
         <button id="homeChoosePatientBtn" class="role-photo-card" type="button">
-          <img src="https://images.unsplash.com/photo-1581579438747-104c53d7fbc4?auto=format&fit=crop&w=720&q=80" alt="Elderly patient using a health support service">
+          <img src="assets/role-patient.svg" alt="Elderly patient using a health support service">
           <span class="role-photo-copy"><strong>Patient</strong><small>Voice assistant, SOS, health logs, calendar</small></span>
         </button>
         <button id="homeChooseHospitalStaffBtn" class="role-photo-card" type="button">
-          <img src="https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&w=720&q=80" alt="Medical staff member in a clinical workspace">
+          <img src="assets/role-staff.svg" alt="Medical staff member in a clinical workspace">
           <span class="role-photo-copy"><strong>Hospital Staff</strong><small>Triage queue, patient rooms, FHIR/eHRSS, handoffs</small></span>
         </button>
         <button id="homeChooseFamilyMemberBtn" class="role-photo-card" type="button">
-          <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=720&q=80" alt="Family caregiver supporting an older adult">
+          <img src="assets/role-family.svg" alt="Family caregiver supporting an older adult">
           <span class="role-photo-copy"><strong>Family Member</strong><small>Shared calendar, alerts, approved updates, messages</small></span>
         </button>
         <a class="secondary-btn" href="member.html">Open full profile setup</a>
@@ -1296,6 +1297,6 @@
     };
   </script>
   <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-  <script src="app.js?v=62"></script>
+  <script src="app.js?v=64"></script>
 </body>
 </html>
