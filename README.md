@@ -1,66 +1,168 @@
-# 🎤 CareVoice AI
-Pilot-ready voice triage and caregiver logging tool for elderly care. Built for HKICT Awards 2026 (Student Innovation Award).
+# CareVoice AI
 
-> **DEMO ONLY - NOT HIPAA COMPLIANT.** The static application uses browser Web Crypto AES-GCM for prototype device storage. It does not provide production key management, healthcare compliance, or a server authorization boundary. Do not enter real patient data.
+CareVoice is a voice-first elderly-care prototype built for the HKICT Awards 2026 Student Innovation category. It provides role-specific experiences for patients, family members, and medical staff, with bilingual voice logging, triage support, care coordination, and an auditable demo workflow.
 
-## ✅ What is actually doable
-- Voice capture in Cantonese and English
-- Automatic categorization for medication, symptom, and emergency mentions
-- Caregiver handoff notes, session briefs, and CSV evidence export
-- A 3-minute judge mode with seeded scenarios for live demo reliability
-- Local-first web app that still works without cloud sync during the pitch
+> **DEMO ONLY - NOT HIPAA COMPLIANT.** Do not enter real patient data. CareVoice is not a medical device, diagnostic system, emergency service, or replacement for clinical judgment.
 
-## 🚫 What is intentionally out of scope
-- No diagnosis claims
-- No hospital EMR integration for the competition build
-- No promise of replacing clinicians or emergency services
-- No dependence on a perfect internet connection for the live demo
+## Product Surfaces
 
-## 🚀 Quick Start (VS Code)
-1. Install [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension
-2. Open folder in VS Code
-3. Right-click `index.html` → "Open with Live Server"
-4. Test voice input in Chrome/Edge (requires HTTPS in production)
+| Surface | Purpose | Entry point |
+| --- | --- | --- |
+| Next.js portal | Authenticated patient, family, and staff workflows | `npm run dev` |
+| Static competition demo | Offline-friendly voice capture, Judge Mode, evidence exports, and Firebase sync | `index.html` |
+| Native Android prototype | Separate dependency-light mobile experience, not a WebView | `carevoice-android/` |
+| CareVoice Micro | Interactive bedside-controller concept and 3D product demo | `carevoice-micro.html` |
 
-## Next.js authentication environment
+The Next.js portal is the recommended application path. The static app remains for reliable offline demonstrations and contains explicit prototype-security warnings.
 
-The server-backed Next.js application requires the variables listed in `.env.example`. Configure the same names in Vercel Project Settings:
+## Current Features
 
-- `AUTH_SECRET`: long random value used to sign Auth.js sessions and room invitations.
-- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Google OAuth server credentials.
-- `CAREVOICE_STAFF_EMAILS`: comma-separated allowlist for accounts permitted to select the staff role.
+- Cantonese and English voice capture and guided prompts
+- Rule-based medication, symptom, and urgent-phrase categorization
+- Patient, family, and medical-staff portals
+- Calendar, care-team, handoff, alert, and clinical-workflow views
+- Auth.js Google sign-in with server-authoritative roles
+- Server-signed room invitations bound to recipient email and role
+- Authenticated voice-assistant API with Zod validation and rate limiting
+- CSV, FHIR-style, and eHRSS-ready prototype exports
+- Repeatable three-minute Judge Mode
+- Native Android and CareVoice Micro companion prototypes
 
-Patient and family roles may be selected by authenticated users. Staff access is denied unless the signed-in email is in the server-side allowlist. Room invitations are issued only by staff, expire after ten minutes, and are bound to the recipient email and intended role.
+## Architecture
 
-The static prototype retains legacy stored role values (`hospital_staff` and `family_member`) and maps them to the canonical server roles (`staff` and `family`) at its compatibility boundary. New server authorization code must use the canonical roles from `lib/roles.ts`.
+```mermaid
+flowchart LR
+	User[Patient / Family / Staff] --> Next[Next.js 16 Portal]
+	Next --> Auth[Auth.js + Google OAuth]
+	Next --> APIs[Protected Route Handlers]
+	APIs --> Invite[Signed Room Invitations]
+	APIs --> Voice[Validated Voice Assistant]
+	User --> Static[Static Competition Demo]
+	Static --> Firebase[Firebase Auth + Firestore Rules]
+	Android[Native Android Prototype] -. planned integration .-> Firebase
+	Micro[CareVoice Micro Prototype] --> User
+```
 
-## 🔑 Firebase Setup (Free)
-1. Go to [console.firebase.google.com](https://console.firebase.google.com)
-2. Create project → Enable Firestore & Authentication
-3. Project Settings → Web App → Copy config → Paste into `firebase-config.js`
-4. In **Authentication > Sign-in method**, enable **Google**
-5. Add your deploy domains in **Authentication > Settings > Authorized domains** (e.g. `your-project.vercel.app`)
-6. Paste `firestore.rules` into Firestore Rules and publish
+The repository intentionally contains both a server-backed Next.js application and a legacy static application. They share product concepts but not a common runtime security boundary.
 
-## 🔐 API Keys and Secrets
-- Firebase Web API keys in frontend apps are **not secrets** and are expected to be visible in browser code.
-- Security comes from Firebase Auth, Firestore Rules, Authorized Domains, and optional App Check.
-- You should still restrict API key usage in Google Cloud Console to your allowed web referrers.
-- Never put true secrets (service account keys, private server keys) in this frontend repo.
+## Quick Start: Next.js Portal
 
-## 🔒 Security Rules (Competition-Safe)
-- Rule template is provided in `firestore.rules`
-- Allows authenticated users to write/read only their own logs
-- Blocks update/delete from client side to keep evidence integrity
-- Validates category, language, text length, and latency fields
+### Requirements
 
-## ☁️ Deploy to Vercel
+- Node.js 20.9 or later
+- npm
+- Google OAuth credentials for authenticated portal testing
+
 ```bash
-npm i -g vercel
+git clone https://github.com/ODd-line/CareVoice-AI.git
+cd CareVoice-AI
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+Configure `.env.local`:
+
+```env
+AUTH_SECRET=replace-with-a-long-random-secret
+GOOGLE_CLIENT_ID=replace-with-google-client-id
+GOOGLE_CLIENT_SECRET=replace-with-google-client-secret
+CAREVOICE_STAFF_EMAILS=staff@example.com,nurse@example.com
+CAREVOICE_LLM_PROVIDER=
+```
+
+- `AUTH_SECRET` signs Auth.js sessions and room invitations.
+- `CAREVOICE_STAFF_EMAILS` is the server-side allowlist for staff access.
+- `CAREVOICE_LLM_PROVIDER` is optional; the assistant defaults to a local safety mock.
+
+Generate a production secret with `openssl rand -base64 32`.
+
+## Static Competition Demo
+
+Run the static app with VS Code Live Server or another local HTTP server:
+
+```bash
+npx serve .
+```
+
+Open `index.html`. Chrome or Edge is recommended for speech recognition. Microphone access requires HTTPS outside localhost.
+
+The static app uses browser Web Crypto AES-GCM only as prototype device-storage protection. It does not provide managed key storage, production authorization, or healthcare compliance.
+
+## Firebase Setup
+
+1. Create a Firebase project and enable Firestore and Google Authentication.
+2. Register a web app and place its public web configuration in `firebase-config.js`.
+3. Add localhost and deployment domains under **Authentication > Settings > Authorized domains**.
+4. Publish the rules from `firestore.rules`.
+5. Restrict the public Firebase web key to approved referrers in Google Cloud Console.
+
+Firebase web API keys are public identifiers, not server secrets. Never add service-account keys, OAuth client secrets, or private server credentials to browser code.
+
+## Security Model
+
+### Enforced by the Next.js portal
+
+- The signed Auth.js session is the source of truth for `patient`, `family`, and `staff` roles.
+- Client cookies and local storage cannot grant portal authorization.
+- Staff selection requires the signed-in email to appear in `CAREVOICE_STAFF_EMAILS`.
+- Portal layouts enforce authentication and role access on the server.
+- Room invitations use HMAC-SHA256 signatures with room, recipient, role, nonce, and expiry claims.
+- Room details render only when invitation claims match the active session.
+- Protected APIs reject unauthenticated and malformed requests.
+
+### Known production gaps
+
+- Room invitations are time-limited but not consume-once. Single-use enforcement requires a shared transactional nonce store.
+- API rate limiting is process-local. Multi-instance deployment requires shared storage such as Vercel KV or Upstash Redis.
+- The static Firebase application is a demonstration surface, not a production healthcare authorization boundary.
+- Production use requires formal privacy, consent, retention, incident-response, accessibility, and clinical-safety review.
+
+The static app retains legacy role values (`hospital_staff` and `family_member`) for stored-profile compatibility and maps them to the canonical server roles (`staff` and `family`). New server authorization code must use `lib/roles.ts`.
+
+## Validation
+
+```bash
+npm test
+npm run lint
+npm run typecheck
+npm run build
+npm audit --omit=dev
+```
+
+The security suite covers anonymous denial, forged role cookies, signed-role mismatch, invitation identity and expiry, legacy and tampered tokens, and voice API `401`/`400` responses.
+
+## Deployment
+
+```bash
+npm install -g vercel
 vercel login
 vercel --prod
 ```
-Live URL: `https://your-project.vercel.app` (auto HTTPS)
+
+Configure every value from `.env.example` in the deployment platform's encrypted environment settings. Add the deployed URL to Google OAuth and Firebase authorized domains.
+
+The production build uses Webpack through `next build --webpack` because the current macOS development environment blocks Turbopack's internal PostCSS worker port.
+
+## Native Android App
+
+Open `carevoice-android/` in Android Studio and run the `app` configuration. See [carevoice-android/README.md](carevoice-android/README.md) for Firebase registration and integration notes.
+
+## Repository Map
+
+```text
+app/                    Next.js App Router pages and protected APIs
+components/             Portal UI and role-aware features
+lib/                    Roles, invitation signing, schemas, and mock data
+tests/                  Vitest security and request-validation tests
+public/assets/          Next.js role imagery
+carevoice-android/      Native Android prototype
+carevoice-micro.*       Bedside-controller concept demo
+app.js + *.html         Static competition and Firebase demo
+firestore.rules         Static-app Firestore rules
+```
 
 ## 🏆 HKICT Alignment
 | Criteria | Implementation |
