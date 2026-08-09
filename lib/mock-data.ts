@@ -227,9 +227,10 @@ export const secureCareRoom = {
   ward: "Ward A · Bed 12",
   encryption: "Authenticated access with a short-lived, server-signed room invitation.",
   assignedTeam: [
-    { name: "Nurse Chloe Lau", role: "Assigned Nurse", gender: "female", voice: "Female voice", access: "Voice checks, medication adherence, shift handoff" },
+    { name: "Mrs. Mei Lin Wong", role: "Patient", gender: "female", voice: "Female voice", access: "Own schedule, approved summaries, voice check-ins" },
+    { name: "Queen Mary Ward A", role: "Hospital Team", gender: "female", voice: "Female voice", access: "Room membership, care handoff, read-only clinical timetable" },
     { name: "Dr. Marcus Lee", role: "Doctor", gender: "male", voice: "Male voice", access: "Clinical notes, triage priority, surgery/discharge plan" },
-    { name: "Ava Wong", role: "Family Member", gender: "female", voice: "Female voice", access: "Visit calendar, approved summaries, emergency alerts" }
+    { name: "Ava Wong", role: "Family Member", gender: "female", voice: "Female voice", access: "Appointment requests, approved summaries, emergency alerts" }
   ],
   privacyRules: [
     "Only the named signed-in recipient with the intended role can use an unexpired invitation.",

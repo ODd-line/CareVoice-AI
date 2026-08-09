@@ -2,6 +2,9 @@ node_modules/
 .next/
 .npm-cache/
 .venv/
+.vscode/
+__pycache__/
+*.py[cod]
 .DS_Store
 *.tsbuildinfo
 .env

@@ -44,7 +44,8 @@ export const roleNav: Record<UserRole, NavItem[]> = {
     { title: "Voice Assistant", href: "/patient/voice-assistant", icon: Bot },
     { title: "My Schedule", href: "/patient/schedule", icon: CalendarDays },
     { title: "My Health", href: "/patient/health", icon: HeartPulse },
-    { title: "Call for Help", href: "/patient/help", icon: PhoneCall }
+    { title: "Call for Help", href: "/patient/help", icon: PhoneCall },
+    { title: "Account Setup", href: "/patient/setup", icon: Settings }
   ],
   family: [
     { title: "Dashboard", href: "/family/dashboard", icon: Activity },

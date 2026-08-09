@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { secureCareRoom } from "@/lib/mock-data";
 import { createRoomInvite } from "@/lib/room-invites";
-import type { UserRole } from "@/lib/roles";
-
-const allowedInviteRoles: UserRole[] = ["patient", "family", "staff"];
+import { getPortalRoleForRoomRole, isRoomMemberRole } from "@/lib/room-access";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -17,17 +15,19 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => ({}));
   const recipientEmail = String(body.recipientEmail || "").trim().toLowerCase();
-  const role = String(body.role || "") as UserRole;
+  const roomRole = String(body.roomRole || "");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail) || recipientEmail.length > 254) {
     return NextResponse.json({ error: "Enter a valid recipient email." }, { status: 400 });
   }
-  if (!allowedInviteRoles.includes(role)) {
+  if (!isRoomMemberRole(roomRole)) {
     return NextResponse.json({ error: "Choose a valid room role." }, { status: 400 });
   }
 
-  const token = createRoomInvite(secureCareRoom.id, recipientEmail, role);
+  const role = getPortalRoleForRoomRole(roomRole);
+  const token = createRoomInvite(secureCareRoom.id, recipientEmail, role, 600, roomRole);
   return NextResponse.json({
     invitePath: `/room/${encodeURIComponent(secureCareRoom.id)}?token=${encodeURIComponent(token)}`,
+    roomRole,
     expiresInSeconds: 600
   });
 }

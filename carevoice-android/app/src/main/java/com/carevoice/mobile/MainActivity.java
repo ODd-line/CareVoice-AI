@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
@@ -13,6 +14,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -27,6 +30,7 @@ public class MainActivity extends Activity {
     private static final int REQ_VOICE = 42;
     private static final int REQ_CALL = 77;
     private static final String PREFS = "carevoice_native_prefs";
+    private static final String SUPPORT_URL = "https://care-voice-ai-omega.vercel.app/?support=open";
 
     private SharedPreferences prefs;
     private LinearLayout root;
@@ -74,7 +78,24 @@ public class MainActivity extends Activity {
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
         root.addView(content);
-        setContentView(scrollView);
+
+        FrameLayout frame = new FrameLayout(this);
+        frame.addView(scrollView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        ImageButton support = new ImageButton(this);
+        support.setImageResource(R.drawable.ic_support_chat);
+        support.setContentDescription("Open CareVoice customer support");
+        support.setColorFilter(Color.WHITE);
+        support.setPadding(dp(15), dp(15), dp(15), dp(15));
+        GradientDrawable supportBackground = new GradientDrawable();
+        supportBackground.setShape(GradientDrawable.OVAL);
+        supportBackground.setColor(Color.rgb(15, 118, 110));
+        support.setBackground(supportBackground);
+        support.setElevation(dp(8));
+        support.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_URL))));
+        FrameLayout.LayoutParams supportParams = new FrameLayout.LayoutParams(dp(58), dp(58), Gravity.END | Gravity.BOTTOM);
+        supportParams.setMargins(dp(16), dp(16), dp(18), dp(22));
+        frame.addView(support, supportParams);
+        setContentView(frame);
     }
 
     private void showLoginPortal() {

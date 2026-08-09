@@ -82,6 +82,42 @@ Silver Care is not one product so much as an entire digital-health company compr
 
 Prioritize one end-to-end workflow: scan a Hong Kong medicine bag, highlight uncertain fields, confirm the schedule, deliver a bilingual voice reminder, and notify an approved caregiver only when necessary. Evaluate character-level accuracy, field-level accuracy, correction rate, completion time, and usability with simulated labels before expanding into broader health functions.
 
+### Deployed Prototype Review
+
+The deployed Silver Care website is a polished mobile-app-style prototype, but it does not yet demonstrate a functioning medical system. Public inspection of the interface and client-side JavaScript confirms that its most important workflows are staged. The sign-in screen accepts any phone number with the public hard-coded code `123456`; no SMS is sent and no server-side identity check is performed. Uploading any image always produces the same Atorvastatin result after a timer, so the prototype does not inspect the image or perform OCR. The medicine box reports that compartment 5 has detected medicine after a 1.5-second timeout rather than receiving a hardware or sensor event. Medicine-taking state exists only in the page DOM and is neither durable nor auditable.
+
+The health assistant uses browser speech recognition and speech synthesis, but its replies are deterministic keyword branches rather than an AI consultation. The walking feature is a timer with a fixed step count rather than sensor or health-platform integration. Family call and message buttons only display confirmation toasts. Most seriously, the emergency control finishes with a `Demo: calling emergency services` message and does not place a telephone call or notify a caregiver. These simulations are acceptable in a clearly labelled interface demonstration, but they must not be presented as operational safety features. A user could otherwise believe that medicine was recognized, hardware responded, or emergency help was requested when none of those events occurred.
+
+### Comparable Products
+
+Silver Care overlaps with several established product categories. Hero and MedMinder combine connected medicine dispensers with scheduled dispensing, adherence tracking, caregiver controls, and mobile applications. EllieGrid provides a Bluetooth pill box with alarms, light-guided compartments, sensor-based adherence reports, and caregiver notifications. Medisafe provides mature medication reminders, adherence support, and caregiver engagement without requiring a dispenser. Silver Care's most defensible distinction is not the general combination of reminders, family support, and a smart box; it is the proposed bilingual recognition of Hong Kong Hospital Authority and pharmacy medicine bags for older adults. That distinction will only be credible when the team demonstrates real field extraction, uncertainty handling, correction, and verified hardware acknowledgement.
+
+### Security, Privacy, and Safety Findings
+
+The site uses HTTPS and HSTS, and no exposed production secret or service-account credential was found in the inspected public code. Uploaded medicine images remain local to the browser in the current prototype, and dynamic assistant messages are inserted with safe text DOM APIs rather than obvious `innerHTML` rendering. These are positive implementation choices.
+
+However, the hard-coded OTP is not authentication and cannot protect health information. The prototype has no demonstrated server-authoritative account, authorization boundary, database persistence, caregiver consent, access revocation, audit history, or medication-record integrity. No privacy policy, retention policy, account-deletion process, or health-data consent flow is visible. The deployed response includes HSTS but lacks observed Content Security Policy, Permissions Policy, Referrer Policy, MIME-sniffing protection, and clickjacking protection. Those missing headers are defence-in-depth weaknesses rather than proof of compromise, but they should be added before the site handles sensitive information.
+
+The larger risk is product safety. A fixed medicine result can falsely imply successful recognition of a blank, unrelated, or wrong-patient image. There is no confidence score, uncertain-field highlighting, patient matching, allergy check, duplicate-medication warning, pharmacy verification, or mandatory human correction. The emergency and medicine-box controls likewise have no real acknowledgement, timeout, mismatch, escalation, or recovery path. These are not merely unfinished conveniences; they are the controls that determine whether the product's health claims are safe.
+
+### App-Like Presentation Versus Application Capability
+
+The prototype feels like a mobile app because it uses a narrow phone shell, simulated status bar, full-screen onboarding, fixed bottom tabs, large touch controls, camera input, hold gestures, modals, and hidden-panel navigation. It is nevertheless a single-page website served from Netlify: sections are shown and hidden inside one document, the URL does not change, and individual views cannot be bookmarked or shared. At a desktop width of 1440 pixels, the experience remains a 430-pixel phone column rather than adapting into a useful caregiver or clinical web layout.
+
+It is also not currently an installable Progressive Web App. No web app manifest or service worker was found, so there is no install metadata, offline cache, or demonstrated background reminder support. It has no native Android or iOS package, push notifications, reliable background execution, Bluetooth box communication, health-platform connection, real telephone or messaging integration, or durable backend synchronization. The accurate description is therefore a mobile-app-style interactive website prototype, not a native app or complete PWA.
+
+### Prototype Improvement Priorities
+
+1. Narrow the MVP to medicine-bag scanning, confirmation, reminders, and one approved-caregiver escalation path.
+2. Label all simulated actions persistently, especially OCR, box detection, AI advice, family contact, and emergency calling.
+3. Implement field-level OCR confidence and require correction of uncertain patient, medicine, dose, frequency, and instruction fields.
+4. Never load a compartment or schedule a reminder from unconfirmed extraction.
+5. Replace the timer-based box sequence with a documented device protocol containing acknowledgement, timeout, mismatch, and reconnect states.
+6. Add real authentication, scoped caregiver consent, access revocation, server-side audit events, and data-retention controls before storing health data.
+7. Either implement a real, tested emergency path with clear delivery acknowledgement or remove the emergency claim.
+8. Add a Content Security Policy and the missing browser hardening headers.
+9. Measure character accuracy, field accuracy, correction rate, task completion, error rate, comprehension, and completion time with representative older users.
+
 ---
 
 ## 6. CareVoice Micro

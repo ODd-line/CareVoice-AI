@@ -10,10 +10,15 @@ export type CareVoiceProfile = {
   phone: string;
   emergencyContact: string;
   linkedPatient: string;
+  setupComplete: boolean;
+  whatsappNumber: string;
+  whatsappConsent: boolean;
+  preferredLanguage: "en-US" | "zh-HK";
 };
 
 type RoleContextValue = {
   profile: CareVoiceProfile;
+  profileLoaded: boolean;
   setProfile: (profile: CareVoiceProfile) => Promise<void>;
   setRole: (role: UserRole) => Promise<void>;
 };
@@ -24,37 +29,56 @@ function profileKey(email?: string | null) {
   return `carevoice.profile.${email || "demo"}`;
 }
 
-function isCareVoiceProfile(value: unknown): value is CareVoiceProfile {
-  if (!value || typeof value !== "object") return false;
+function readCareVoiceProfile(value: unknown): CareVoiceProfile | null {
+  if (!value || typeof value !== "object") return null;
   const profile = value as Partial<CareVoiceProfile>;
-  return ["patient", "family", "staff"].includes(String(profile.role))
-    && typeof profile.phone === "string"
-    && typeof profile.emergencyContact === "string"
-    && typeof profile.linkedPatient === "string";
+  if (!["patient", "family", "staff"].includes(String(profile.role))
+    || typeof profile.phone !== "string"
+    || typeof profile.emergencyContact !== "string"
+    || typeof profile.linkedPatient !== "string") return null;
+
+  return {
+    role: profile.role as UserRole,
+    phone: profile.phone,
+    emergencyContact: profile.emergencyContact,
+    linkedPatient: profile.linkedPatient,
+    setupComplete: profile.setupComplete ?? true,
+    whatsappNumber: profile.whatsappNumber ?? profile.phone,
+    whatsappConsent: profile.whatsappConsent ?? false,
+    preferredLanguage: profile.preferredLanguage === "zh-HK" ? "zh-HK" : "en-US"
+  };
 }
 
 export function RoleProvider({ children }: { children: React.ReactNode }) {
   const { data: session, update } = useSession();
   const [profile, setProfileState] = useState<CareVoiceProfile>({
     role: mockProfile.role,
-    phone: mockProfile.phone,
-    emergencyContact: mockProfile.emergencyContact,
-    linkedPatient: mockProfile.linkedPatient
+    phone: "",
+    emergencyContact: "",
+    linkedPatient: "",
+    setupComplete: false,
+    whatsappNumber: "",
+    whatsappConsent: false,
+    preferredLanguage: "en-US"
   });
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   useEffect(() => {
     const sessionRole = session?.user?.role || "patient";
     try {
       const stored = window.localStorage.getItem(profileKey(session?.user?.email));
       const parsed: unknown = stored ? JSON.parse(stored) : null;
-      if (isCareVoiceProfile(parsed)) {
-        setProfileState({ ...parsed, role: sessionRole });
+      const savedProfile = readCareVoiceProfile(parsed);
+      if (savedProfile) {
+        setProfileState({ ...savedProfile, role: sessionRole });
+        setProfileLoaded(true);
         return;
       }
     } catch {
       window.localStorage.removeItem(profileKey(session?.user?.email));
     }
     setProfileState((current) => ({ ...current, role: sessionRole }));
+    setProfileLoaded(true);
   }, [session?.user?.email, session?.user?.role]);
 
   const setProfile = async (nextProfile: CareVoiceProfile) => {
@@ -72,7 +96,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     await setProfile({ ...profile, role });
   };
 
-  return <RoleContext.Provider value={{ profile, setProfile, setRole }}>{children}</RoleContext.Provider>;
+  return <RoleContext.Provider value={{ profile, profileLoaded, setProfile, setRole }}>{children}</RoleContext.Provider>;
 }
 
 export function useCareVoiceProfile() {

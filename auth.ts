@@ -3,6 +3,8 @@ import Google from "next-auth/providers/google";
 import type { UserRole } from "@/lib/roles";
 
 const userRoles: UserRole[] = ["patient", "family", "staff"];
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
 function isUserRole(value: unknown): value is UserRole {
   return userRoles.includes(value as UserRole);
@@ -18,12 +20,10 @@ function canUseRole(email: string | null | undefined, role: UserRole) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET
-    })
-  ],
+  secret: process.env.AUTH_SECRET || (process.env.NODE_ENV === "development" ? "carevoice-local-development-only-secret" : undefined),
+  providers: googleClientId && googleClientSecret
+    ? [Google({ clientId: googleClientId, clientSecret: googleClientSecret })]
+    : [],
   pages: {
     signIn: "/"
   },

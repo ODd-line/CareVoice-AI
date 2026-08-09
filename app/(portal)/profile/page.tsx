@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useSession } from "next-auth/react";
 import { Save } from "lucide-react";
@@ -18,7 +18,7 @@ const roleOptions: UserRole[] = ["patient", "family", "staff"];
 
 export default function ProfilePage() {
   const { data: session } = useSession();
-  const { profile, setProfile } = useCareVoiceProfile();
+  const { profile, profileLoaded, setProfile } = useCareVoiceProfile();
   const [draft, setDraft] = useState(profile);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -26,6 +26,10 @@ export default function ProfilePage() {
   const name = user?.name || mockProfile.name;
   const email = user?.email || mockProfile.email;
   const image = user?.image || mockProfile.image;
+
+  useEffect(() => {
+    if (profileLoaded) setDraft(profile);
+  }, [profile, profileLoaded]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

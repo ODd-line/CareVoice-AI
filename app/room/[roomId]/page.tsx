@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { LockKeyhole, ShieldCheck, UserPlus } from "lucide-react";
+import { LockKeyhole, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RoomWorkspace } from "@/components/room-workspace";
 import { auth } from "@/auth";
 import { secureCareRoom } from "@/lib/mock-data";
-import { verifyRoomInvite } from "@/lib/room-invites";
+import { getRoomCapabilities } from "@/lib/room-access";
+import { getVerifiedRoomInvite } from "@/lib/room-invites";
 
 type RoomInvitePageProps = {
   params: Promise<{ roomId: string }>;
@@ -15,8 +17,10 @@ type RoomInvitePageProps = {
 export default async function RoomInvitePage({ params, searchParams }: RoomInvitePageProps) {
   const [{ roomId }, { token }] = await Promise.all([params, searchParams]);
   const session = await auth();
-  const tokenMatches = roomId === secureCareRoom.id
-    && verifyRoomInvite(token, roomId, session?.user?.email || "", session?.user?.role || "patient");
+  const invite = roomId === secureCareRoom.id
+    ? getVerifiedRoomInvite(token, roomId, session?.user?.email || "", session?.user?.role || "patient")
+    : null;
+  const tokenMatches = Boolean(invite);
 
   return (
     <main className="min-h-screen healthcare-grid px-4 py-10">
@@ -32,20 +36,13 @@ export default async function RoomInvitePage({ params, searchParams }: RoomInvit
               <p className="flex items-center gap-2 font-semibold"><LockKeyhole className="h-4 w-4 text-primary" /> Privacy secure join</p>
               <p className="mt-2 text-sm text-muted-foreground">{tokenMatches ? "This server-signed room invitation is valid for the current signed-in user." : "This invitation is missing, invalid, or expired. Ask authorized staff to issue a new link."}</p>
             </div>
-            {tokenMatches ? <div className="grid gap-3 md:grid-cols-3">
-              {secureCareRoom.assignedTeam.map((person) => <div key={person.name} className="rounded-lg border bg-white p-4">
-                <p className="font-semibold">{person.role}</p>
-                <p className="text-sm text-muted-foreground">{person.name}</p>
-                <p className="mt-2 text-xs text-muted-foreground">{person.access}</p>
-              </div>)}
-            </div> : null}
             <div className="flex flex-wrap gap-3">
-              {tokenMatches ? <Button><UserPlus className="h-4 w-4" /> Request Room Access</Button> : null}
               <Button variant="outline" asChild><Link href="/">Back to CareVoice</Link></Button>
             </div>
             {tokenMatches ? <p className="flex items-center gap-2 text-sm text-muted-foreground"><ShieldCheck className="h-4 w-4 text-primary" /> {secureCareRoom.encryption}</p> : null}
           </CardContent>
         </Card>
+        {invite && token ? <RoomWorkspace roomId={roomId} token={token} roomRole={invite.roomRole} capabilities={getRoomCapabilities(invite.roomRole)} members={secureCareRoom.assignedTeam} /> : null}
       </section>
     </main>
   );

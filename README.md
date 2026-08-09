@@ -23,6 +23,10 @@ The Next.js portal is the recommended application path. The static app remains f
 - CareVoice Micro control hub with NFC profile loading, medication acknowledgement, nurse escalation, family contact, network recovery, and an audit timeline
 - Large-control social memory game designed for the Micro joystick
 - Patient, family, and medical-staff portals
+- First-time patient setup with contact details, optional WhatsApp handoff consent, and browser microphone/reply tests
+- Signed shared rooms for patient, family, doctor, and hospital-team members with QR entry
+- Server-enforced room permissions: family appointment requests and doctor-only clinical timetable changes
+- Floating customer-support chat with optional server-side Gemini and deterministic safety fallback
 - Calendar, care-team, handoff, alert, and clinical-workflow views
 - Auth.js Google sign-in with server-authoritative roles
 - Server-signed room invitations bound to recipient email and role
@@ -117,11 +121,14 @@ Firebase web API keys are public identifiers, not server secrets. Never add serv
 - Room invitations use HMAC-SHA256 signatures with room, recipient, role, nonce, and expiry claims.
 - Room details render only when invitation claims match the active session.
 - Protected APIs reject unauthenticated and malformed requests.
+- Room schedule APIs revalidate the signed recipient, portal role, room role, room ID, and expiry on every request.
+- Global CSP, clickjacking denial, MIME protection, referrer controls, and browser permission policies apply to the hosted web app.
 
 ### Known production gaps
 
 - Room invitations are time-limited but not consume-once. Single-use enforcement requires a shared transactional nonce store.
 - API rate limiting is process-local. Multi-instance deployment requires shared storage such as Vercel KV or Upstash Redis.
+- The prototype room schedule store is process-local and must move to an encrypted transactional database before production or multi-instance deployment.
 - The static Firebase application is a demonstration surface, not a production healthcare authorization boundary.
 - Production use requires formal privacy, consent, retention, incident-response, accessibility, and clinical-safety review.
 
@@ -154,6 +161,8 @@ The production build uses Webpack through `next build --webpack` because the cur
 ## Native Android App
 
 Open `carevoice-android/` in Android Studio and run the `app` configuration. See [carevoice-android/README.md](carevoice-android/README.md) for Firebase registration and integration notes.
+
+The public site distributes only the hosted web experience. Source archives, deployment packages, credentials, model prompts, and server implementation details are not offered as public downloads. The WhatsApp setup stores an approved number and opens a reviewed `wa.me` handoff when requested; it does not authenticate a WhatsApp account, read chats, or send messages automatically.
 
 ## Repository Map
 

@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { LockKeyhole, QrCode, ShieldCheck, UsersRound } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { RoomQrEntry } from "@/components/room-qr-entry";
 import { secureCareRoom } from "@/lib/mock-data";
+import type { RoomMemberRole } from "@/lib/room-access";
 
 type SecureRoomCardProps = {
   audience: "patient" | "family" | "staff";
@@ -24,7 +27,12 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
   const [inviteError, setInviteError] = useState("");
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
-  const [recipientRole, setRecipientRole] = useState<"patient" | "family" | "staff">("family");
+  const [roomRole, setRoomRole] = useState<RoomMemberRole>("family");
+  const [inviteUrl, setInviteUrl] = useState("");
+
+  useEffect(() => {
+    setInviteUrl(invitePath ? `${window.location.origin}${invitePath}` : "");
+  }, [invitePath]);
 
   async function createInvite() {
     setInviteError("");
@@ -33,7 +41,7 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
       const response = await fetch("/api/room-invites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientEmail, role: recipientRole })
+        body: JSON.stringify({ recipientEmail, roomRole })
       });
       const result = await response.json() as { invitePath?: string; error?: string };
       if (!response.ok || !result.invitePath) throw new Error(result.error || "Could not create invite.");
@@ -60,7 +68,7 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
       <CardContent className="grid gap-5 lg:grid-cols-[220px_1fr]">
         <div className="rounded-lg border bg-muted/40 p-4 text-center">
           <div className="mx-auto grid h-40 w-40 place-items-center rounded-md border bg-white">
-            <QrCode className="h-28 w-28 text-primary" />
+            {inviteUrl ? <QRCodeSVG value={inviteUrl} size={136} level="M" marginSize={1} /> : <QrCode className="h-28 w-28 text-primary" />}
           </div>
           {audience === "staff" ? (
             invitePath ? (
@@ -68,18 +76,20 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
             ) : (
               <div className="mt-3 space-y-2 text-left">
                 <Input type="email" value={recipientEmail} onChange={(event) => setRecipientEmail(event.target.value)} placeholder="Recipient email" aria-label="Room invite recipient email" />
-                <select value={recipientRole} onChange={(event) => setRecipientRole(event.target.value as typeof recipientRole)} className="h-10 w-full rounded-md border bg-background px-3 text-sm" aria-label="Room invite role">
+                <select value={roomRole} onChange={(event) => setRoomRole(event.target.value as RoomMemberRole)} className="h-10 w-full rounded-md border bg-background px-3 text-sm" aria-label="Room invite role">
                   <option value="patient">Patient</option>
                   <option value="family">Family member</option>
-                  <option value="staff">Medical staff</option>
+                  <option value="doctor">Doctor</option>
+                  <option value="hospital">Hospital team</option>
                 </select>
                 <Button className="w-full" onClick={() => void createInvite()} disabled={isCreatingInvite || !recipientEmail.trim()}>
                   {isCreatingInvite ? "Creating..." : "Create signed invite"}
                 </Button>
               </div>
             )
-          ) : <p className="mt-3 text-xs text-muted-foreground">Ask authorized staff for a short-lived room invitation.</p>}
+          ) : <p className="mt-3 text-xs text-muted-foreground">Ask an authorized doctor or hospital team for a short-lived room invitation.</p>}
           {inviteError ? <p className="mt-2 text-xs font-medium text-red-700">{inviteError}</p> : null}
+          <div className="mt-3"><RoomQrEntry /></div>
         </div>
         <div className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">

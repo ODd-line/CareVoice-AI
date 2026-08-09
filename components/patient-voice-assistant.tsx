@@ -6,13 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useCareVoiceProfile } from "@/components/role-provider";
 import { careVoiceVoiceProfiles } from "@/lib/mock-data";
+import { createWhatsAppUrl, isWhatsAppRequest } from "@/lib/whatsapp";
 
 type AssistantMessage = {
   role: "patient" | "assistant";
   text: string;
   urgency?: "green" | "yellow" | "red";
   actions?: string[];
+  whatsappUrl?: string;
 };
 
 type VoicePreference = {
@@ -45,6 +48,7 @@ const openingMessage: AssistantMessage = {
 };
 
 export function PatientVoiceAssistant() {
+  const { profile } = useCareVoiceProfile();
   const [messages, setMessages] = useState<AssistantMessage[]>([openingMessage]);
   const [input, setInput] = useState("");
   const [selectedPersonId, setSelectedPersonId] = useState(careVoiceVoiceProfiles[0]?.personId || "patient-mei-wong");
@@ -72,11 +76,14 @@ export function PatientVoiceAssistant() {
         role: "assistant",
         text: String(result.reply || "No reply was returned."),
         urgency: result.urgency,
-        actions: Array.isArray(result.actions) ? result.actions : []
+        actions: Array.isArray(result.actions) ? result.actions : [],
+        whatsappUrl: profile.whatsappConsent && isWhatsAppRequest(cleanText)
+          ? createWhatsAppUrl(profile.whatsappNumber, `CareVoice update: ${cleanText}`) || undefined
+          : undefined
       };
 
       setMessages((current) => [...current, reply]);
-      speak(reply.text, { gender: result.speaker?.preferredVoice || selectedProfile.preferredVoice, language: result.speaker?.language || selectedProfile.language });
+      speak(reply.text, { gender: result.speaker?.preferredVoice || selectedProfile.preferredVoice, language: profile.preferredLanguage });
     } catch (error) {
       setMessages((current) => [...current, {
         role: "assistant",
@@ -96,7 +103,7 @@ export function PatientVoiceAssistant() {
     }
 
     const recognition = new Recognition();
-    recognition.lang = selectedProfile?.language || "en-US";
+  recognition.lang = profile.preferredLanguage;
     recognition.interimResults = false;
     recognition.continuous = false;
     recognition.onresult = (event) => {
@@ -182,6 +189,7 @@ export function PatientVoiceAssistant() {
                 </div>
                 <p>{message.text}</p>
                 {message.actions ? <div className="mt-3 flex flex-wrap gap-2">{message.actions.map((action) => <Badge key={action} tone="blue">{action}</Badge>)}</div> : null}
+                {message.whatsappUrl ? <Button className="mt-3" variant="outline" asChild><a href={message.whatsappUrl} target="_blank" rel="noreferrer">Review in WhatsApp</a></Button> : null}
               </div>
             ))}
             {isThinking ? <p className="text-sm text-muted-foreground">CareVoice is preparing a reply...</p> : null}
