@@ -4,6 +4,7 @@ import { buildLocalSupportReply } from "@/lib/support-ai";
 describe("customer support safety fallback", () => {
   it("explains room permissions", () => {
     expect(buildLocalSupportReply("Can family modify the timetable?").reply).toContain("Only the assigned doctor");
+    expect(buildLocalSupportReply("Who can modify a room timetable?").reply).toContain("Only the assigned doctor");
   });
 
   it("refuses medical support questions", () => {
