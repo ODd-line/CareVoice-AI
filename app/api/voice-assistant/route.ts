@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { careVoicePeople } from "@/lib/mock-data";
 import { auth } from "@/auth";
+import { generateCareVoiceReply, type CareVoiceReply } from "@/lib/carevoice-ai";
 import { voiceAssistantRequestSchema } from "@/lib/voice-request";
 
 const requestWindows = new Map<string, { count: number; resetAt: number }>();
@@ -16,7 +17,7 @@ function isRateLimited(userId: string) {
   current.count += 1;
   return current.count > 20;
 }
-function buildCareVoiceReply(message: string) {
+function buildCareVoiceReply(message: string): CareVoiceReply {
   const text = message.toLowerCase();
 
   if (/chest|breath|faint|跌|暈|胸|呼吸|倒/.test(text)) {
@@ -77,8 +78,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ urgency: "green", reply: "Press the microphone and tell CareVoice how you feel today.", actions: ["Start listening"] });
   }
 
+  const localReply = buildCareVoiceReply(message);
+  const modelReply = localReply.urgency === "red" ? null : await generateCareVoiceReply(message, person.language);
+
   return NextResponse.json({
-    ...buildCareVoiceReply(message),
+    ...(modelReply || localReply),
     speaker: {
       personId: person.id,
       name: person.name,
@@ -86,7 +90,7 @@ export async function POST(request: NextRequest) {
       preferredVoice: person.preferredVoice,
       language: person.language
     },
-    modelMode: process.env.CAREVOICE_LLM_PROVIDER ? "llm-ready" : "local-safety-mock",
-    llmHook: "Connect CAREVOICE_LLM_PROVIDER plus an OpenAI, Azure OpenAI, Gemini, or hospital-approved model endpoint here. Keep clinical escalation rule-based and auditable."
+    modelMode: modelReply ? "gemini-assisted" : "local-safety-fallback",
+    safetyMode: localReply.urgency === "red" ? "deterministic-urgent-rule" : "structured-human-review"
   });
 }

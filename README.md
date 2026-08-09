@@ -19,6 +19,9 @@ The Next.js portal is the recommended application path. The static app remains f
 
 - Cantonese and English voice capture and guided prompts
 - Rule-based medication, symptom, and urgent-phrase categorization
+- Optional server-side Gemini assistance with structured output and a local safety fallback
+- CareVoice Micro control hub with NFC profile loading, medication acknowledgement, nurse escalation, family contact, network recovery, and an audit timeline
+- Large-control social memory game designed for the Micro joystick
 - Patient, family, and medical-staff portals
 - Calendar, care-team, handoff, alert, and clinical-workflow views
 - Auth.js Google sign-in with server-authoritative roles
@@ -70,12 +73,14 @@ AUTH_SECRET=replace-with-a-long-random-secret
 GOOGLE_CLIENT_ID=replace-with-google-client-id
 GOOGLE_CLIENT_SECRET=replace-with-google-client-secret
 CAREVOICE_STAFF_EMAILS=staff@example.com,nurse@example.com
-CAREVOICE_LLM_PROVIDER=
+GOOGLE_GENERATIVE_AI_API_KEY=
+CAREVOICE_GEMINI_MODEL=gemini-2.5-flash
 ```
 
 - `AUTH_SECRET` signs Auth.js sessions and room invitations.
 - `CAREVOICE_STAFF_EMAILS` is the server-side allowlist for staff access.
-- `CAREVOICE_LLM_PROVIDER` is optional; the assistant defaults to a local safety mock.
+- `GOOGLE_GENERATIVE_AI_API_KEY` is optional and enables bounded Gemini replies through the protected server route.
+- `CAREVOICE_GEMINI_MODEL` selects the Gemini model; the assistant falls back to deterministic local safety responses when the model is absent or unavailable.
 
 Generate a production secret with `openssl rand -base64 32`.
 

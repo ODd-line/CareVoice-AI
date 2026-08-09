@@ -4,6 +4,7 @@ import {
   Bot,
   CalendarDays,
   ClipboardList,
+  Gamepad2,
   HeartPulse,
   Home,
   Hospital,
@@ -39,6 +40,7 @@ export const roleHome: Record<UserRole, string> = {
 export const roleNav: Record<UserRole, NavItem[]> = {
   patient: [
     { title: "Home", href: "/patient/dashboard", icon: Home },
+    { title: "Micro Hub", href: "/patient/micro", icon: Gamepad2 },
     { title: "Voice Assistant", href: "/patient/voice-assistant", icon: Bot },
     { title: "My Schedule", href: "/patient/schedule", icon: CalendarDays },
     { title: "My Health", href: "/patient/health", icon: HeartPulse },

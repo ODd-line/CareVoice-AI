@@ -160,7 +160,7 @@ export function PatientVoiceAssistant() {
             </span>
           </Button>
           <div className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
-            <span className="flex items-center gap-2"><Bot className="h-4 w-4 text-primary" /> LLM-ready response layer</span>
+            <span className="flex items-center gap-2"><Bot className="h-4 w-4 text-primary" /> Gemini-assisted with safety fallback</span>
             <span className="flex items-center gap-2"><Volume2 className="h-4 w-4 text-primary" /> {selectedProfile?.preferredVoice || "Matched"} reply voice</span>
             <span className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary" /> Rule-based urgent escalation</span>
           </div>
@@ -195,12 +195,12 @@ export function PatientVoiceAssistant() {
 
       <Card>
         <CardHeader>
-          <CardTitle>How to connect real voice LLM models</CardTitle>
-          <CardDescription>CareVoice should keep voice UX friendly while clinical safety stays auditable.</CardDescription>
+          <CardTitle>How CareVoice AI is connected</CardTitle>
+          <CardDescription>Conversational help can use Gemini while urgent escalation remains deterministic and auditable.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <div className="rounded-lg border p-4"><h3 className="font-semibold">1. Speech-to-text</h3><p className="mt-2 text-sm text-muted-foreground">Use browser Web Speech for prototype, or Whisper/Azure Speech/Google Speech for production Cantonese and noisy-room accuracy.</p></div>
-          <div className="rounded-lg border p-4"><h3 className="font-semibold">2. LLM reasoning</h3><p className="mt-2 text-sm text-muted-foreground">Route transcripts to an approved LLM through `/api/voice-assistant`, with system prompts, patient room context, and no diagnosis claims.</p></div>
+          <div className="rounded-lg border p-4"><h3 className="font-semibold">2. Gemini assistance</h3><p className="mt-2 text-sm text-muted-foreground">The protected API requests structured, non-diagnostic replies from Gemini when configured. Invalid or unavailable model output falls back locally.</p></div>
           <div className="rounded-lg border p-4"><h3 className="font-semibold">3. Voice reply</h3><p className="mt-2 text-sm text-muted-foreground">CareVoice chooses a male or female voice profile from the person database. Browser voices vary by device; production can use Azure or Google neural TTS for guaranteed gender/language voices.</p></div>
         </CardContent>
       </Card>

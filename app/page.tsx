@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { ArrowDown, BellRing, Bluetooth, Cable, CheckCircle2, Gamepad2, HeartPulse, LogIn, Mic2, Pill, Radio, ShieldCheck, Stethoscope, UserRound, UsersRound, Volume2 } from "lucide-react";
 import { CareVoiceController } from "@/components/carevoice-controller";
+import { CareVoiceSystemOverview } from "@/components/carevoice-system-overview";
 import { useCareVoiceProfile } from "@/components/role-provider";
 import { Button } from "@/components/ui/button";
 import { roleHome, roleLabels, roleSummary, type UserRole } from "@/lib/roles";
@@ -69,7 +70,7 @@ export default function HomePage() {
       <section id="product" className="product-hero">
         <nav className="product-nav" aria-label="Product navigation">
           <a className="product-brand" href="#product" aria-label="CareVoice Micro home"><span>CV</span><strong>CareVoice <small>Micro</small></strong></a>
-          <div className="product-nav-links"><a href="#controls">Controls</a><a href="#concept">Concept</a><a href="#tutorial">Tutorial</a><a href="#roles">Login</a></div>
+          <div className="product-nav-links"><a href="#controls">Controls</a><a href="#concept">Concept</a><a href="#tutorial">Tutorial</a><a href="#system">System</a><a href="#roles">Login</a></div>
           {status === "authenticated" ? <Button size="sm" asChild><Link href={roleHome[profile.role]}>Open workspace</Link></Button> : <Button size="sm" onClick={() => signIn("google", { callbackUrl: "/#roles" })}><LogIn className="h-4 w-4" /> Sign in</Button>}
         </nav>
         <CareVoiceController />
@@ -100,6 +101,8 @@ export default function HomePage() {
         <div className="care-loop" aria-label="CareVoice concept workflow"><article><span>01</span><UserRound /><h3>Identify</h3><p>NFC or QR opens the correct patient profile and permissions.</p></article><article><span>02</span><Mic2 /><h3>Capture</h3><p>A dedicated key starts a short bilingual voice prompt.</p></article><article><span>03</span><HeartPulse /><h3>Classify</h3><p>Auditable rules label medication, symptom, routine, or urgent signals.</p></article><article><span>04</span><Stethoscope /><h3>Route</h3><p>The summary reaches the authorized family or clinical workspace.</p></article><article><span>05</span><CheckCircle2 /><h3>Close</h3><p>A person acknowledges the action and leaves an audit trail.</p></article></div>
         <div className="role-tutorial"><div className="role-tutorial-tabs" role="tablist" aria-label="Tutorial by role">{roles.map((role) => <button key={role} type="button" role="tab" aria-selected={tutorialRole === role} className={tutorialRole === role ? "is-active" : ""} onClick={() => setTutorialRole(role)}>{roleLabels[role]}</button>)}</div><div className="role-tutorial-content"><div><p className="product-kicker">{roleLabels[tutorialRole]} journey</p><h3>{roleTutorials[tutorialRole].title}</h3></div><ol>{roleTutorials[tutorialRole].steps.map((step, index) => <li key={step}><span>{String(index + 1).padStart(2, "0")}</span>{step}</li>)}</ol></div></div>
       </section>
+
+      <CareVoiceSystemOverview />
 
       <section className="product-band trust-section"><div><ShieldCheck /><p className="product-kicker">Trust is a system behavior</p><h2>Role access is signed on the server, not painted onto the UI.</h2></div><ul><li>Auth.js Google session is the source of truth</li><li>Staff accounts require a server-side email allowlist</li><li>Room invitations bind recipient, role, room, and expiry</li><li>Clinical escalation stays visible and human-reviewed</li></ul></section>
 
