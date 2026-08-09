@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "CareVoice Clinical Connect",
-  description: "Voice-first healthcare triage platform with role-based workspaces."
+  title: "CareVoice Micro | Tactile Voice Care",
+  description: "A tactile bedside voice controller connecting patients, families, and care teams through accountable care workflows."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
