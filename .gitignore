@@ -11,3 +11,4 @@ node_modules/
 carevoice-android/.gradle/
 carevoice-android/build/
 carevoice-android/app/build/
+.vercel/
