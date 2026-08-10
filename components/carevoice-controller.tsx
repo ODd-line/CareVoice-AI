@@ -232,11 +232,24 @@ export function CareVoiceController() {
       const height = mount.clientHeight;
       renderer.setSize(width, height, false);
       camera.aspect = width / Math.max(height, 1);
-      camera.updateProjectionMatrix();
-      if (width < 760) {
+      if (width < 480) {
+        controls.minDistance = 22;
+        controls.maxDistance = 44;
+        camera.position.set(20.6, 17.5, 25.7);
+        controls.target.set(0, 0.1, 0);
+      } else if (width < 760) {
+        controls.minDistance = 12;
+        controls.maxDistance = 26;
         camera.position.set(11.8, 10.2, 14.8);
         controls.target.set(0, 0.3, 0);
+      } else {
+        controls.minDistance = 9;
+        controls.maxDistance = 22;
+        camera.position.set(9.8, 8.2, 11.8);
+        controls.target.set(0.6, 0.35, 0);
       }
+      camera.updateProjectionMatrix();
+      controls.update();
     };
     const observer = new ResizeObserver(resize);
     observer.observe(mount);

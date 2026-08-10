@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const { authMock } = vi.hoisted(() => ({ authMock: vi.fn() }));
@@ -16,6 +16,10 @@ function makeRequest(body: unknown) {
 
 describe("voice assistant API", () => {
   beforeEach(() => authMock.mockReset());
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
 
   it("returns 401 without an authenticated session", async () => {
     authMock.mockResolvedValue(null);
@@ -27,5 +31,21 @@ describe("voice assistant API", () => {
     authMock.mockResolvedValue({ user: { id: "test-user" } });
     const response = await POST(makeRequest({ message: ["not", "text"] }));
     expect(response.status).toBe(400);
+  });
+
+  it("never sends urgent symptoms to a model provider", async () => {
+    authMock.mockResolvedValue({ user: { id: "urgent-test-user" } });
+    vi.stubEnv("CAREVOICE_LLM_BASE_URL", "https://model.hospital.internal");
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "configured-gemini-key");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await POST(makeRequest({ message: "I have chest pain and cannot breathe", personId: "patient-mei-wong" }));
+    const result = await response.json() as { urgency: string; safetyMode: string };
+
+    expect(response.status).toBe(200);
+    expect(result.urgency).toBe("red");
+    expect(result.safetyMode).toBe("deterministic-urgent-rule");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

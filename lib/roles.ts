@@ -59,7 +59,8 @@ export const roleNav: Record<UserRole, NavItem[]> = {
     { title: "Patient Roster", href: "/staff/patients", icon: UsersRound },
     { title: "My Shift Schedule", href: "/staff/schedule", icon: CalendarDays },
     { title: "Clinical Notes", href: "/staff/notes", icon: NotebookPen },
-    { title: "Admin", href: "/staff/admin", icon: Hospital }
+    { title: "Admin", href: "/staff/admin", icon: Hospital },
+    { title: "Settings", href: "/profile", icon: Settings }
   ]
 };
 

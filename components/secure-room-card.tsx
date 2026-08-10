@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { LockKeyhole, QrCode, ShieldCheck, UsersRound } from "lucide-react";
+import { Copy, LockKeyhole, Mail, QrCode, RefreshCw, Share2, ShieldCheck, UsersRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +28,7 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
   const [recipientEmail, setRecipientEmail] = useState("");
   const [roomRole, setRoomRole] = useState<RoomMemberRole>("family");
   const [inviteUrl, setInviteUrl] = useState("");
+  const [deliveryStatus, setDeliveryStatus] = useState("");
 
   useEffect(() => {
     setInviteUrl(invitePath ? `${window.location.origin}${invitePath}` : "");
@@ -36,6 +36,7 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
 
   async function createInvite() {
     setInviteError("");
+    setDeliveryStatus("");
     setIsCreatingInvite(true);
     try {
       const response = await fetch("/api/room-invites", {
@@ -51,6 +52,45 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
     } finally {
       setIsCreatingInvite(false);
     }
+  }
+
+  async function shareInvite() {
+    if (!inviteUrl) return;
+    const shareData = {
+      title: "CareVoice secure room invitation",
+      text: `A ${roomRole} invitation for ${secureCareRoom.patient}. It expires ten minutes after issue and works only for ${recipientEmail}.`,
+      url: inviteUrl
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setDeliveryStatus("Invite shared from this device.");
+        return;
+      }
+      await navigator.clipboard.writeText(inviteUrl);
+      setDeliveryStatus("Signed invite copied. Send it only to the named recipient.");
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setDeliveryStatus("Could not open sharing. Use Email invite or Copy link instead.");
+    }
+  }
+
+  async function copyInvite() {
+    if (!inviteUrl) return;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setDeliveryStatus("Signed invite link copied.");
+    } catch {
+      setDeliveryStatus("Copy failed. Use the addressed email action instead.");
+    }
+  }
+
+  function resetInvite() {
+    setInvitePath("");
+    setInviteUrl("");
+    setDeliveryStatus("");
+    setInviteError("");
+    setRecipientEmail("");
   }
 
   return (
@@ -72,7 +112,19 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
           </div>
           {audience === "staff" ? (
             invitePath ? (
-              <Button className="mt-3 w-full" asChild><Link href={invitePath}>Open 10-minute invite</Link></Button>
+              <div className="mt-3 space-y-2 text-left">
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-950">
+                  <p className="font-bold">Real signed QR ready</p>
+                  <p className="mt-1 break-all">For {recipientEmail} · {roomRole} · expires in 10 minutes</p>
+                </div>
+                <Button className="w-full" type="button" onClick={() => void shareInvite()}><Share2 className="h-4 w-4" /> Send room invite</Button>
+                <Button className="w-full" type="button" variant="outline" asChild><a href={`mailto:${encodeURIComponent(recipientEmail)}?subject=${encodeURIComponent("CareVoice secure room invitation")}&body=${encodeURIComponent(`You have been invited to the ${secureCareRoom.patient} CareVoice room as ${roomRole}. This signed link expires ten minutes after issue and works only with your invited account:\n\n${inviteUrl}`)}`}><Mail className="h-4 w-4" /> Email invite</a></Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button type="button" variant="outline" onClick={() => void copyInvite()}><Copy className="h-4 w-4" /> Copy link</Button>
+                  <Button type="button" variant="outline" onClick={resetInvite}><RefreshCw className="h-4 w-4" /> New invite</Button>
+                </div>
+                {deliveryStatus ? <p className="text-xs text-muted-foreground" role="status">{deliveryStatus}</p> : null}
+              </div>
             ) : (
               <div className="mt-3 space-y-2 text-left">
                 <Input type="email" value={recipientEmail} onChange={(event) => setRecipientEmail(event.target.value)} placeholder="Recipient email" aria-label="Room invite recipient email" />
@@ -83,8 +135,9 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
                   <option value="hospital">Hospital team</option>
                 </select>
                 <Button className="w-full" onClick={() => void createInvite()} disabled={isCreatingInvite || !recipientEmail.trim()}>
-                  {isCreatingInvite ? "Creating..." : "Create signed invite"}
+                  {isCreatingInvite ? "Issuing..." : "Issue recipient QR invite"}
                 </Button>
+                <p className="text-xs text-muted-foreground">The QR will contain a server-signed room link tied to this email and role, not a reusable public room code.</p>
               </div>
             )
           ) : <p className="mt-3 text-xs text-muted-foreground">Ask an authorized doctor or hospital team for a short-lived room invitation.</p>}

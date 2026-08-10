@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import { isApprovedMedicalProfessional } from "@/lib/medical-professional-store";
 import type { UserRole } from "@/lib/roles";
 
 const userRoles: UserRole[] = ["patient", "family", "staff"];
@@ -16,7 +17,7 @@ function canUseRole(email: string | null | undefined, role: UserRole) {
     .split(",")
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
-  return staffEmails.includes(String(email || "").trim().toLowerCase());
+  return staffEmails.includes(String(email || "").trim().toLowerCase()) || isApprovedMedicalProfessional(email);
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

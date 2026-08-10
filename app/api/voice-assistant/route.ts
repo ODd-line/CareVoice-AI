@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       preferredVoice: person.preferredVoice,
       language: person.language
     },
-    modelMode: modelReply ? "gemini-assisted" : "local-safety-fallback",
+    modelMode: modelReply ? "model-assisted" : "local-safety-fallback",
     safetyMode: localReply.urgency === "red" ? "deterministic-urgent-rule" : "structured-human-review"
   });
 }

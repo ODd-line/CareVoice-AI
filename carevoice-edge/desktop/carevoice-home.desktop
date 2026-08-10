@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=CareVoice Home
+Comment=Care, connection, Mahjong 3D and games
+Exec=@HOME@/.local/bin/carevoice-home
+Icon=@HOME@/.local/share/icons/carevoice-home.svg
+Terminal=false
+Categories=Utility;
+StartupNotify=true

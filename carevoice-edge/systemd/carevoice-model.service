@@ -1,0 +1,23 @@
+[Unit]
+Description=CareVoice local language model
+After=network.target
+ConditionPathExists=/opt/carevoice/model/carevoice-qwen-1.5b-q4_k_m.gguf
+
+[Service]
+Type=simple
+User=carevoice
+Group=carevoice
+EnvironmentFile=/etc/carevoice/carevoice.env
+Environment=LD_LIBRARY_PATH=/opt/carevoice/lib
+Environment=GGML_BACKEND_PATH=/opt/carevoice/lib/libggml-cpu-armv8.2_1.so
+ExecStart=/opt/carevoice/bin/llama-server --model /opt/carevoice/model/carevoice-qwen-1.5b-q4_k_m.gguf --alias carevoice-qwen-1.5b --host 127.0.0.1 --port 8000 --ctx-size 2048 --parallel 1 --threads 4 --batch-size 128 --api-key ${CAREVOICE_LLM_API_KEY}
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/carevoice
+
+[Install]
+WantedBy=multi-user.target

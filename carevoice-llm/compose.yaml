@@ -1,0 +1,24 @@
+services:
+  model:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      CAREVOICE_MODEL_PATH: /models/carevoice-qwen-3b-merged
+      CAREVOICE_MODEL_NAME: carevoice-qwen-3b
+      CAREVOICE_MODEL_API_KEY: ${CAREVOICE_MODEL_API_KEY:?Set CAREVOICE_MODEL_API_KEY}
+      HF_HOME: /cache/huggingface
+    volumes:
+      - ./artifacts/carevoice-qwen-3b-merged:/models/carevoice-qwen-3b-merged:ro
+      - carevoice-model-cache:/cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  carevoice-model-cache:

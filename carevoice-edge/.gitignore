@@ -1,0 +1,6 @@
+dist/
+models/
+bin/llama-server
+*.img
+*.img.xz
+*.tar.gz

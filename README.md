@@ -12,6 +12,7 @@ CareVoice is a voice-first elderly-care prototype built for the HKICT Awards 202
 | Static competition demo | Offline-friendly voice capture, Judge Mode, evidence exports, and Firebase sync | `index.html` |
 | Native Android prototype | Separate dependency-light mobile experience, not a WebView | `carevoice-android/` |
 | CareVoice Micro | Interactive bedside-controller concept and 3D product demo | `carevoice-micro.html` |
+| Raspberry Pi appliance | Preloaded Micro web app, safety rules, support, and quantized local AI | `carevoice-edge/` |
 
 The Next.js portal is the recommended application path. The static app remains for reliable offline demonstrations and contains explicit prototype-security warnings.
 
@@ -20,6 +21,7 @@ The Next.js portal is the recommended application path. The static app remains f
 - Cantonese and English voice capture and guided prompts
 - Rule-based medication, symptom, and urgent-phrase categorization
 - Optional server-side Gemini assistance with structured output and a local safety fallback
+- Optional hospital-hosted Qwen 3B model with QLoRA training, bounded JSON inference, and Gemini as a secondary provider
 - CareVoice Micro control hub with NFC profile loading, medication acknowledgement, nurse escalation, family contact, network recovery, and an audit timeline
 - Large-control social memory game designed for the Micro joystick
 - Patient, family, and medical-staff portals
@@ -29,6 +31,8 @@ The Next.js portal is the recommended application path. The static app remains f
 - Floating customer-support chat with optional server-side Gemini and deterministic safety fallback
 - Calendar, care-team, handoff, alert, and clinical-workflow views
 - Auth.js Google sign-in with server-authoritative roles
+- Detailed medical-professional credential applications with staff-only manual review and Settings status
+- Staff administration portal for request review, managed professional access, audit events, and allowlisted read-only diagnostics
 - Server-signed room invitations bound to recipient email and role
 - Authenticated voice-assistant API with Zod validation and rate limiting
 - CSV, FHIR-style, and eHRSS-ready prototype exports
@@ -44,6 +48,7 @@ flowchart LR
 	Next --> APIs[Protected Route Handlers]
 	APIs --> Invite[Signed Room Invitations]
 	APIs --> Voice[Validated Voice Assistant]
+	APIs --> LocalLLM[Hospital-hosted CareVoice model]
 	User --> Static[Static Competition Demo]
 	Static --> Firebase[Firebase Auth + Firestore Rules]
 	Android[Native Android Prototype] -. planned integration .-> Firebase
@@ -85,6 +90,7 @@ CAREVOICE_GEMINI_MODEL=gemini-2.5-flash
 - `CAREVOICE_STAFF_EMAILS` is the server-side allowlist for staff access.
 - `GOOGLE_GENERATIVE_AI_API_KEY` is optional and enables bounded Gemini replies through the protected server route.
 - `CAREVOICE_GEMINI_MODEL` selects the Gemini model; the assistant falls back to deterministic local safety responses when the model is absent or unavailable.
+- `CAREVOICE_LLM_BASE_URL`, `CAREVOICE_LLM_MODEL`, and `CAREVOICE_LLM_API_KEY` connect the server to the optional hospital-hosted model. See [carevoice-llm/README.md](carevoice-llm/README.md).
 
 Generate a production secret with `openssl rand -base64 32`.
 
@@ -116,7 +122,9 @@ Firebase web API keys are public identifiers, not server secrets. Never add serv
 
 - The signed Auth.js session is the source of truth for `patient`, `family`, and `staff` roles.
 - Client cookies and local storage cannot grant portal authorization.
-- Staff selection requires the signed-in email to appear in `CAREVOICE_STAFF_EMAILS`.
+- Staff selection requires the signed-in email to appear in `CAREVOICE_STAFF_EMAILS` or have an approved, account-bound medical-professional application.
+- Professional applicants cannot approve themselves; only an existing authenticated staff account can record an approval or rejection with a review note.
+- The administration console exposes named diagnostics only. It does not accept arbitrary shell commands or reveal environment secrets.
 - Portal layouts enforce authentication and role access on the server.
 - Room invitations use HMAC-SHA256 signatures with room, recipient, role, nonce, and expiry claims.
 - Room details render only when invitation claims match the active session.
@@ -129,6 +137,8 @@ Firebase web API keys are public identifiers, not server secrets. Never add serv
 - Room invitations are time-limited but not consume-once. Single-use enforcement requires a shared transactional nonce store.
 - API rate limiting is process-local. Multi-instance deployment requires shared storage such as Vercel KV or Upstash Redis.
 - The prototype room schedule store is process-local and must move to an encrypted transactional database before production or multi-instance deployment.
+- Medical-professional applications and review decisions are process-local. They must move to a durable encrypted database with reviewer audit logs before deployment on serverless or multiple instances.
+- Administration audit events are also process-local and capped in memory. Production requires immutable durable audit storage and a real identity directory before administrators can manage all users across instances.
 - The static Firebase application is a demonstration surface, not a production healthcare authorization boundary.
 - Production use requires formal privacy, consent, retention, incident-response, accessibility, and clinical-safety review.
 
@@ -173,6 +183,8 @@ lib/                    Roles, invitation signing, schemas, and mock data
 tests/                  Vitest security and request-validation tests
 public/assets/          Next.js role imagery
 carevoice-android/      Native Android prototype
+carevoice-edge/         Raspberry Pi golden microSD appliance tooling
+carevoice-llm/          QLoRA training and hospital inference service
 carevoice-micro.*       Bedside-controller concept demo
 app.js + *.html         Static competition and Firebase demo
 firestore.rules         Static-app Firestore rules

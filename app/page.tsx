@@ -7,6 +7,7 @@ import { signIn, useSession } from "next-auth/react";
 import { ArrowDown, BellRing, Bluetooth, Cable, CheckCircle2, Gamepad2, HeartPulse, LogIn, Mic2, Pill, Radio, ShieldCheck, Stethoscope, UserRound, UsersRound, Volume2 } from "lucide-react";
 import { CareVoiceController } from "@/components/carevoice-controller";
 import { CareVoiceSystemOverview } from "@/components/carevoice-system-overview";
+import { MedicalProfessionalApplicationForm } from "@/components/medical-professional-application";
 import { useCareVoiceProfile } from "@/components/role-provider";
 import { Button } from "@/components/ui/button";
 import { roleHome, roleLabels, roleSummary, type UserRole } from "@/lib/roles";
@@ -82,7 +83,7 @@ export default function HomePage() {
         </div>
         <aside className="product-specs" aria-label="Controller specifications">
           <p>CV-M / 01</p>
-          <dl><div><dt>Connection</dt><dd><Bluetooth /> Bluetooth</dd></div><div><dt>Fallback</dt><dd><Cable /> USB-C</dd></div><div><dt>Local hub</dt><dd><Radio /> Raspberry Pi</dd></div><div><dt>Controls</dt><dd>8 keys + dial</dd></div><div><dt>Profiles</dt><dd>NFC / QR</dd></div></dl>
+          <dl><div><dt>Connection</dt><dd><Bluetooth /> Bluetooth</dd></div><div><dt>Fallback</dt><dd><Cable /> USB-C</dd></div><div><dt>Local hub</dt><dd><Radio /> Raspberry Pi 5</dd></div><div><dt>On-device AI</dt><dd>Qwen 1.5B Q4</dd></div><div><dt>Storage</dt><dd>Preloaded microSD</dd></div></dl>
         </aside>
       </section>
 
@@ -110,6 +111,8 @@ export default function HomePage() {
         <div className="section-heading"><p className="product-kicker">Enter CareVoice</p><h2>One platform, three accountable views.</h2><p>Choose the role that matches your responsibility. Google sign-in happens before the server authorizes the workspace.</p></div>
         <div className="role-entry-grid">{roles.map((role) => { const Icon = roleSummary[role].icon; const person = rolePeople[role]; return <article key={role} className={profile.role === role ? "role-entry is-current" : "role-entry"}><Image src={person.image} alt={person.alt} width={720} height={420} /><div className="role-entry-copy"><Icon /><p>{person.caption}</p><h3>{roleLabels[role]}</h3><span>{roleSummary[role].description}</span><Button className="w-full" variant={profile.role === role ? "default" : "outline"} disabled={status === "loading"} onClick={() => void chooseRole(role)}>{status === "authenticated" ? `Open ${roleLabels[role]}` : `Sign in as ${roleLabels[role]}`}</Button></div></article>; })}</div>
       </section>
+
+      <MedicalProfessionalApplicationForm />
 
       <footer className="product-footer"><div className="product-brand"><span>CV</span><strong>CareVoice <small>Micro</small></strong></div><p>Demo prototype. Not a medical device or emergency service.</p><a href="#product">Back to controller</a></footer>
     </main>

@@ -1,0 +1,19 @@
+#!/bin/sh
+
+for attempt in $(seq 1 30); do
+  curl -fsS http://127.0.0.1:3000/desktop >/dev/null && break
+  sleep 2
+done
+
+exec /usr/lib/chromium/chromium \
+  --ozone-platform=wayland \
+  --user-data-dir="${HOME}/.config/carevoice-chromium" \
+  --password-store=basic \
+  --app=http://127.0.0.1:3000/desktop \
+  --start-maximized \
+  --no-first-run \
+  --no-default-browser-check \
+  --disable-session-crashed-bubble \
+  --disable-features=OptimizationGuideModelDownloading,OnDeviceModel,Vulkan \
+  --use-angle=gles \
+  --disable-gpu-compositing

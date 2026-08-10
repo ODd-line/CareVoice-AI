@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MedicalProfessionalSettings } from "@/components/medical-professional-settings";
 import { mockProfile } from "@/lib/mock-data";
 import { roleHome, roleLabels, type UserRole } from "@/lib/roles";
 import { useCareVoiceProfile } from "@/components/role-provider";
@@ -99,6 +100,8 @@ export default function ProfilePage() {
           </form>
         </CardContent>
       </Card>
+
+      <MedicalProfessionalSettings />
     </div>
   );
 }

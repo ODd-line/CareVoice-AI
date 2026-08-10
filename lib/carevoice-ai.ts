@@ -1,6 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
+import { generateSelfHostedJson } from "@/lib/self-hosted-ai";
 
 export type CareVoiceReply = {
   urgency: "green" | "yellow" | "red";
@@ -28,11 +29,11 @@ function parseModelJson(text: string) {
   return modelReplySchema.parse(parsed);
 }
 
-export async function generateCareVoiceReply(message: string, language: string): Promise<CareVoiceReply | null> {
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-  if (!apiKey) return null;
+function isClinicallyUnsafe(reply: CareVoiceReply) {
+  return /\b(diagnos(?:e|is)|prescrib(?:e|ed)|change (?:your )?dose|take (?:an?|another|extra|\d+)|stop (?:your )?medication)\b/i.test(`${reply.reply} ${reply.actions.join(" ")}`);
+}
 
-  const model = process.env.CAREVOICE_GEMINI_MODEL || "gemini-2.5-flash";
+export async function generateCareVoiceReply(message: string, language: string): Promise<CareVoiceReply | null> {
   const prompt = [
     "You are CareVoice, a calm communication assistant for an older adult.",
     "You may help the person describe symptoms, record a medication question, understand their calendar, contact approved family, or prepare a concise care-team summary.",
@@ -42,6 +43,13 @@ export async function generateCareVoiceReply(message: string, language: string):
     `Preferred language: ${language}`,
     `User message: ${message}`
   ].join("\n");
+
+  const selfHostedReply = await generateSelfHostedJson(prompt, modelReplySchema, { temperature: 0.2, maxTokens: 320 });
+  if (selfHostedReply && !isClinicallyUnsafe(selfHostedReply)) return selfHostedReply;
+
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!apiKey) return null;
+  const model = process.env.CAREVOICE_GEMINI_MODEL || "gemini-2.5-flash";
 
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
@@ -61,7 +69,8 @@ export async function generateCareVoiceReply(message: string, language: string):
     const result = await response.json() as GeminiResponse;
     const text = result.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("") || "";
     if (!text) return null;
-    return parseModelJson(text);
+    const reply = parseModelJson(text);
+    return isClinicallyUnsafe(reply) ? null : reply;
   } catch {
     return null;
   }

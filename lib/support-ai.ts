@@ -1,6 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
+import { generateSelfHostedJson } from "@/lib/self-hosted-ai";
 
 const supportReplySchema = z.object({
   reply: z.string().trim().min(1).max(700),
@@ -11,10 +12,15 @@ type GeminiResponse = { candidates?: Array<{ content?: { parts?: Array<{ text?: 
 
 export type SupportReply = z.infer<typeof supportReplySchema>;
 
+export function isMedicalSupportQuestion(message: string) {
+  return /chest|breath|faint|emergency|dose|medicine|medication|symptom|pain|diagnos|prescri|胸|呼吸|暈|藥|痛/i.test(message);
+}
+
+function isUnsafeSupportReply(reply: SupportReply) {
+  return /\b(diagnos(?:e|is)|prescrib(?:e|ed)|change (?:your )?dose|take (?:an?|another|extra|\d+)|api key is|password is|bearer token)\b/i.test(`${reply.reply} ${reply.suggestions.join(" ")}`);
+}
+
 export async function generateSupportReply(message: string): Promise<SupportReply | null> {
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-  if (!apiKey) return null;
-  const model = process.env.CAREVOICE_GEMINI_MODEL || "gemini-2.5-flash";
   const prompt = [
     "You are CareVoice product support.",
     "Answer only questions about using CareVoice: sign-in, patient setup, room invitations, QR entry, role permissions, voice access, WhatsApp handoff, privacy, and troubleshooting.",
@@ -23,6 +29,13 @@ export async function generateSupportReply(message: string): Promise<SupportRepl
     "Keep the answer concise and return only JSON with reply and up to three short suggestions.",
     `Question: ${message}`
   ].join("\n");
+
+  const selfHostedReply = await generateSelfHostedJson(prompt, supportReplySchema, { temperature: 0.15, maxTokens: 300 });
+  if (selfHostedReply && !isUnsafeSupportReply(selfHostedReply)) return selfHostedReply;
+
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!apiKey) return null;
+  const model = process.env.CAREVOICE_GEMINI_MODEL || "gemini-2.5-flash";
 
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
@@ -38,7 +51,8 @@ export async function generateSupportReply(message: string): Promise<SupportRepl
     const result = await response.json() as GeminiResponse;
     const raw = result.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("") || "";
     const normalized = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
-    return supportReplySchema.parse(JSON.parse(normalized) as unknown);
+    const reply = supportReplySchema.parse(JSON.parse(normalized) as unknown);
+    return isUnsafeSupportReply(reply) ? null : reply;
   } catch {
     return null;
   }
@@ -46,7 +60,7 @@ export async function generateSupportReply(message: string): Promise<SupportRepl
 
 export function buildLocalSupportReply(message: string): SupportReply {
   const text = message.toLowerCase();
-  if (/chest|breath|faint|emergency|dose|medicine|symptom|pain/.test(text)) return { reply: "This customer-support chat cannot provide medical or emergency advice. Contact your care team or local emergency services now if someone may be unsafe.", suggestions: ["Open Call for Help", "Contact care team"] };
+  if (isMedicalSupportQuestion(text)) return { reply: "This customer-support chat cannot provide medical or emergency advice. Contact your care team or local emergency services now if someone may be unsafe.", suggestions: ["Open Call for Help", "Contact care team"] };
   if (/family|appointment|schedule|timetable/.test(text)) return { reply: "Family members can request appointments in the shared room. Only the assigned doctor can change confirmed clinical timetable items.", suggestions: ["Open shared room", "Request appointment"] };
   if (/qr|room|invite/.test(text)) return { reply: "Ask authorized hospital staff or the assigned doctor for a signed 10-minute room invite. Use Scan room QR or paste the signed link, then sign in with the exact invited email and role.", suggestions: ["Scan room QR", "Check invited email"] };
   if (/voice|microphone|speak/.test(text)) return { reply: "Open Patient Account Setup, choose a language, and use Test microphone. Allow microphone access in the browser prompt. Typed chat remains available if speech recognition is unsupported.", suggestions: ["Open Account Setup", "Check microphone permission"] };

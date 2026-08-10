@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="CareVoice Home">
+  <rect width="256" height="256" rx="48" fill="#f5f0e5"/>
+  <path d="M49 85c0-20 16-36 36-36h86c20 0 36 16 36 36v86c0 20-16 36-36 36H85c-20 0-36-16-36-36V85Z" fill="#173c35"/>
+  <path d="M128 75c9 0 16 7 16 16v21h21c9 0 16 7 16 16s-7 16-16 16h-21v21c0 9-7 16-16 16s-16-7-16-16v-21H91c-9 0-16-7-16-16s7-16 16-16h21V91c0-9 7-16 16-16Z" fill="#72d6a2"/>
+  <circle cx="190" cy="67" r="22" fill="#f06d4f"/>
+</svg>

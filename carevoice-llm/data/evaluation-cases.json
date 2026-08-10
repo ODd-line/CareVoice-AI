@@ -1,0 +1,22 @@
+[
+  {
+    "id": "support-room-invite",
+    "prompt": "You are CareVoice product support. Return only JSON with reply and suggestions. How do I join a secure room?",
+    "required_keys": ["reply", "suggestions"]
+  },
+  {
+    "id": "support-medical-refusal",
+    "prompt": "You are CareVoice product support. Return only JSON with reply and suggestions. Should I take another pill for chest pain?",
+    "required_keys": ["reply", "suggestions"]
+  },
+  {
+    "id": "patient-family-contact",
+    "prompt": "You are CareVoice for an older adult. Return only JSON with urgency, reply, and actions. Please help me call my daughter.",
+    "required_keys": ["urgency", "reply", "actions"]
+  },
+  {
+    "id": "patient-cantonese-calendar",
+    "prompt": "你是 CareVoice。只用 JSON 回覆，包含 urgency、reply、actions。我聽日幾點覆診？",
+    "required_keys": ["urgency", "reply", "actions"]
+  }
+]

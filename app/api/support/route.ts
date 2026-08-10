@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { buildLocalSupportReply, generateSupportReply } from "@/lib/support-ai";
+import { buildLocalSupportReply, generateSupportReply, isMedicalSupportQuestion } from "@/lib/support-ai";
 
 const supportRequestSchema = z.object({ message: z.string().trim().min(1).max(500) }).strict();
 const requestWindows = new Map<string, { count: number; resetAt: number }>();
@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
   if (Number(request.headers.get("content-length") || 0) > 4_096) return NextResponse.json({ error: "Request is too large." }, { status: 413, headers: noStore });
   const parsed = supportRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Enter a support question under 500 characters." }, { status: 400, headers: noStore });
-  const modelReply = await generateSupportReply(parsed.data.message);
-  return NextResponse.json({ ...(modelReply || buildLocalSupportReply(parsed.data.message)), mode: modelReply ? "gemini-assisted" : "local-support-fallback" }, { headers: noStore });
+  const localReply = buildLocalSupportReply(parsed.data.message);
+  const modelReply = isMedicalSupportQuestion(parsed.data.message) ? null : await generateSupportReply(parsed.data.message);
+  return NextResponse.json({ ...(modelReply || localReply), mode: modelReply ? "model-assisted" : "local-support-fallback" }, { headers: noStore });
 }
