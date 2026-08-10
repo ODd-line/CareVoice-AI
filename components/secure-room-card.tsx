@@ -1,7 +1,7 @@
 "use client";
 
 import { Copy, LockKeyhole, Mail, QrCode, RefreshCw, Share2, ShieldCheck, UsersRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,12 +27,8 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
   const [isCreatingInvite, setIsCreatingInvite] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
   const [roomRole, setRoomRole] = useState<RoomMemberRole>("family");
-  const [inviteUrl, setInviteUrl] = useState("");
   const [deliveryStatus, setDeliveryStatus] = useState("");
-
-  useEffect(() => {
-    setInviteUrl(invitePath ? `${window.location.origin}${invitePath}` : "");
-  }, [invitePath]);
+  const inviteUrl = invitePath && typeof window !== "undefined" ? `${window.location.origin}${invitePath}` : "";
 
   async function createInvite() {
     setInviteError("");
@@ -87,7 +83,6 @@ export function SecureRoomCard({ audience }: SecureRoomCardProps) {
 
   function resetInvite() {
     setInvitePath("");
-    setInviteUrl("");
     setDeliveryStatus("");
     setInviteError("");
     setRecipientEmail("");

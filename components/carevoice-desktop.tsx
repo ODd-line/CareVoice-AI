@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type CSSProperties, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   BellRing,
@@ -30,10 +30,11 @@ import {
   Wifi
 } from "lucide-react";
 import styles from "./carevoice-desktop.module.css";
+import { LocalDevicePairing } from "./local-device-pairing";
+import { LocalMahjongGame } from "./local-mahjong-game";
 
 type DesktopApp = "home" | "games" | "mahjong" | "memory" | "noughts" | "medication" | "family" | "help" | "settings";
 
-const mahjongFaces = ["春", "夏", "秋", "冬", "竹", "梅", "蘭", "菊", "一", "二", "三", "四", "五", "六", "七", "八"];
 const memoryFaces = [
   { label: "Tea", icon: "茶" },
   { label: "Flower", icon: "花" },
@@ -50,79 +51,6 @@ function shuffled<T>(items: T[]) {
     [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
   }
   return next;
-}
-
-function MahjongGame({ onBack }: { onBack: () => void }) {
-  const [tiles, setTiles] = useState(() => mahjongFaces.flatMap((face, pair) => [{ id: pair * 2, face }, { id: pair * 2 + 1, face }]));
-  const [selected, setSelected] = useState<number | null>(null);
-  const [removed, setRemoved] = useState<number[]>([]);
-  const [moves, setMoves] = useState(0);
-  const [message, setMessage] = useState("Choose two matching tiles.");
-
-  function newGame() {
-    setTiles(shuffled(mahjongFaces.flatMap((face, pair) => [{ id: pair * 2, face }, { id: pair * 2 + 1, face }])));
-    setSelected(null);
-    setRemoved([]);
-    setMoves(0);
-    setMessage("Choose two matching tiles.");
-  }
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => newGame(), 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  function chooseTile(id: number, face: string) {
-    if (removed.includes(id)) return;
-    if (selected === null) {
-      setSelected(id);
-      setMessage(`${face} selected. Find its pair.`);
-      return;
-    }
-    if (selected === id) {
-      setSelected(null);
-      setMessage("Selection cleared.");
-      return;
-    }
-    setMoves((current) => current + 1);
-    const first = tiles.find((tile) => tile.id === selected);
-    if (first?.face === face) {
-      const nextRemoved = [...removed, selected, id];
-      setRemoved(nextRemoved);
-      setMessage(nextRemoved.length === tiles.length ? "Board cleared. Beautiful work!" : "Match found.");
-    } else {
-      setMessage("Not a pair. Try another tile.");
-    }
-    setSelected(null);
-  }
-
-  return (
-    <section className={styles.gameScreen} aria-labelledby="mahjong-3d-title">
-      <GameHeader title="Mahjong 3D" subtitle={`${removed.length / 2} of ${tiles.length / 2} pairs · ${moves} moves`} onBack={onBack} onReset={newGame} />
-      <div className={styles.mahjongScene}>
-        <div className={styles.mahjongTable}>
-          {tiles.map((tile, index) => {
-            const isRemoved = removed.includes(tile.id);
-            const tileStyle = { "--tile-lift": `${(index % 4) * 2}px`, "--tile-delay": `${index * 18}ms` } as CSSProperties;
-            return (
-              <button
-                key={tile.id}
-                type="button"
-                style={tileStyle}
-                className={`${styles.mahjongTile} ${selected === tile.id ? styles.tileSelected : ""} ${isRemoved ? styles.tileRemoved : ""}`}
-                onClick={() => chooseTile(tile.id, tile.face)}
-                disabled={isRemoved}
-                aria-label={isRemoved ? "Matched tile" : `Mahjong tile ${tile.face}`}
-              >
-                <span>{tile.face}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-      <div className={styles.gameMessage} role="status"><Sparkles aria-hidden="true" />{message}</div>
-    </section>
-  );
 }
 
 function MemoryGame({ onBack }: { onBack: () => void }) {
@@ -218,8 +146,8 @@ const desktopApps = [
   { id: "help" as const, label: "Ask for help", detail: "Contact a caregiver", icon: BellRing, tone: "red" }
 ];
 
-export function CareVoiceDesktop() {
-  const [activeApp, setActiveApp] = useState<DesktopApp>("home");
+export function CareVoiceDesktop({ initialApp = "home", initialRoomCode = "" }: { initialApp?: DesktopApp; initialRoomCode?: string }) {
+  const [activeApp, setActiveApp] = useState<DesktopApp>(initialApp);
   const [now, setNow] = useState<Date | null>(null);
   const [dark, setDark] = useState(false);
   const [sound, setSound] = useState(true);
@@ -269,14 +197,14 @@ export function CareVoiceDesktop() {
         ) : null}
 
         {activeApp === "games" ? <section className={styles.library}><header><button type="button" className={styles.iconButton} onClick={() => setActiveApp("home")} aria-label="Back home"><ArrowLeft /></button><div><p>Activities</p><h1>Games room</h1><span>Relax, play together, or keep your mind moving.</span></div></header><div className={styles.gameLibrary}><button type="button" className={styles.gameFeature} onClick={() => setActiveApp("mahjong")}><span className={styles.mahjongPreview}><i>春</i><i>竹</i><i>八</i></span><div><em>Most played</em><h2>Mahjong 3D</h2><p>Match beautifully rendered tiles and clear the table.</p><strong>Play now</strong></div></button><button type="button" className={styles.gameCard} onClick={() => setActiveApp("memory")}><span><Sparkles /></span><div><h2>Memory Garden</h2><p>Find six peaceful picture pairs.</p></div></button><button type="button" className={styles.gameCard} onClick={() => setActiveApp("noughts")}><span><Grid3X3 /></span><div><h2>Noughts & Crosses</h2><p>A familiar two-player favourite.</p></div></button></div></section> : null}
-        {activeApp === "mahjong" ? <MahjongGame onBack={() => setActiveApp("games")} /> : null}
+        {activeApp === "mahjong" ? <LocalMahjongGame initialRoomCode={initialRoomCode} onBack={() => setActiveApp("games")} /> : null}
         {activeApp === "memory" ? <MemoryGame onBack={() => setActiveApp("games")} /> : null}
         {activeApp === "noughts" ? <NoughtsGame onBack={() => setActiveApp("games")} /> : null}
 
         {activeApp === "medication" ? <SimpleWindow title="Medication" icon={<Pill />} onBack={() => setActiveApp("home")}><div className={styles.reminder}><span>8:00 PM</span><h2>Blue blood-pressure pill</h2><p>Take one tablet with warm water. CareVoice cannot change your prescribed dose.</p><button type="button" className={medicationTaken ? styles.confirmed : ""} onClick={() => { setMedicationTaken(true); announce("Medication marked as taken"); }}><Check />{medicationTaken ? "Marked as taken" : "Yes, I took it"}</button><Link href="/patient/micro"><CircleHelp /> I need help with this reminder</Link></div></SimpleWindow> : null}
         {activeApp === "family" ? <SimpleWindow title="Family" icon={<UsersRound />} onBack={() => setActiveApp("home")}><div className={styles.contact}><span><UserRound /></span><div><h2>Daniel Chan</h2><p>Son · Approved contact</p></div><button type="button" onClick={() => announce("Starting family call")}>Start call</button><button type="button" className={styles.secondaryAction} onClick={() => announce("Opening voice message")}><MessageCircle /> Voice message</button></div></SimpleWindow> : null}
         {activeApp === "help" ? <SimpleWindow title="Ask for help" icon={<BellRing />} onBack={() => setActiveApp("home")}><div className={styles.helpPanel}><ShieldCheck /><h2>{helpSent ? "Request sent" : "Would you like a caregiver?"}</h2><p>{helpSent ? "A caregiver has received your non-emergency request. Please stay where you are." : "This sends a non-emergency assistance request to the care team."}</p><button type="button" disabled={helpSent} onClick={() => { setHelpSent(true); announce("Caregiver request sent"); }}><BellRing />{helpSent ? "Caregiver notified" : "Send caregiver request"}</button><small>For immediate danger, call local emergency services directly.</small></div></SimpleWindow> : null}
-        {activeApp === "settings" ? <SimpleWindow title="Settings" icon={<Settings />} onBack={() => setActiveApp("home")}><div className={styles.settingsList}><button type="button" onClick={() => setDark((current) => !current)}>{dark ? <Sun /> : <Moon />}<span><strong>{dark ? "Use light appearance" : "Use dark appearance"}</strong><small>Change screen colours</small></span></button><button type="button" onClick={() => setSound((current) => !current)}>{sound ? <Volume2 /> : <VolumeX />}<span><strong>Spoken feedback {sound ? "on" : "off"}</strong><small>Read important actions aloud</small></span></button><Link href="/"><House /><span><strong>CareVoice platform</strong><small>Open the full care portal</small></span></Link></div></SimpleWindow> : null}
+        {activeApp === "settings" ? <SimpleWindow title="Settings" icon={<Settings />} onBack={() => setActiveApp("home")}><div className={styles.settingsList}><button type="button" onClick={() => setDark((current) => !current)}>{dark ? <Sun /> : <Moon />}<span><strong>{dark ? "Use light appearance" : "Use dark appearance"}</strong><small>Change screen colours</small></span></button><button type="button" onClick={() => setSound((current) => !current)}>{sound ? <Volume2 /> : <VolumeX />}<span><strong>Spoken feedback {sound ? "on" : "off"}</strong><small>Read important actions aloud</small></span></button></div><LocalDevicePairing /></SimpleWindow> : null}
       </div>
 
       <nav className={styles.dock} aria-label="CareVoice home controls"><button type="button" className={activeApp === "home" ? styles.dockActive : ""} onClick={() => setActiveApp("home")}><House /><span>Home</span></button><button type="button" className={["games", "mahjong", "memory", "noughts"].includes(activeApp) ? styles.dockActive : ""} onClick={() => setActiveApp("games")}><Gamepad2 /><span>Games</span></button><Link href="/patient/voice-assistant"><Bot /><span>CareVoice</span></Link><button type="button" className={activeApp === "settings" ? styles.dockActive : ""} onClick={() => setActiveApp("settings")}><Settings /><span>Settings</span></button><button type="button" onClick={() => setActiveApp("home")}><LayoutGrid /><span>All apps</span></button></nav>

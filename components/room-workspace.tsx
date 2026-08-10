@@ -50,7 +50,13 @@ export function RoomWorkspace({ roomId, token, roomRole, capabilities, members }
 
   async function refreshSchedule() {
     try {
-      setEntries(await fetchRoomSchedule(roomId, token));
+      const nextEntries = await fetchRoomSchedule(roomId, token);
+      setEntries(nextEntries);
+      const firstClinicalEntry = nextEntries.find((entry) => entry.kind === "clinical");
+      if (firstClinicalEntry) {
+        setSelectedEntryId(firstClinicalEntry.id);
+        setDoctorDraft({ title: firstClinicalEntry.title, start: localDateTime(firstClinicalEntry.start), end: localDateTime(firstClinicalEntry.end) });
+      }
       setStatus("");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not load the shared timetable.");
@@ -60,16 +66,18 @@ export function RoomWorkspace({ roomId, token, roomRole, capabilities, members }
   useEffect(() => {
     let active = true;
     void fetchRoomSchedule(roomId, token)
-      .then((nextEntries) => { if (active) { setEntries(nextEntries); setStatus(""); } })
+      .then((nextEntries) => { if (active) {
+        setEntries(nextEntries);
+        const firstClinicalEntry = nextEntries.find((entry) => entry.kind === "clinical");
+        if (firstClinicalEntry) {
+          setSelectedEntryId(firstClinicalEntry.id);
+          setDoctorDraft({ title: firstClinicalEntry.title, start: localDateTime(firstClinicalEntry.start), end: localDateTime(firstClinicalEntry.end) });
+        }
+        setStatus("");
+      } })
       .catch((error: unknown) => { if (active) setStatus(error instanceof Error ? error.message : "Could not load the shared timetable."); });
     return () => { active = false; };
   }, [roomId, token]);
-
-  useEffect(() => {
-    if (!selectedEntry) return;
-    setSelectedEntryId(selectedEntry.id);
-    setDoctorDraft({ title: selectedEntry.title, start: localDateTime(selectedEntry.start), end: localDateTime(selectedEntry.end) });
-  }, [selectedEntry]);
 
   async function submitAppointment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

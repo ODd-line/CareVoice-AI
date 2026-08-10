@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
@@ -14,13 +13,17 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,8 +33,6 @@ public class MainActivity extends Activity {
     private static final int REQ_VOICE = 42;
     private static final int REQ_CALL = 77;
     private static final String PREFS = "carevoice_native_prefs";
-    private static final String SUPPORT_URL = "https://care-voice-ai-omega.vercel.app/?support=open";
-
     private SharedPreferences prefs;
     private LinearLayout root;
     private LinearLayout content;
@@ -39,12 +40,19 @@ public class MainActivity extends Activity {
     private String selectedRole;
     private String activePhone = "+85291234567";
     private String activeHospitalPhone = "+85235068888";
+    private String pendingPairCode = "";
+    private String pendingHubUrl = "http://carevoice-micro.local:3000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         selectedRole = prefs.getString("role", "");
+        Uri launchData = getIntent().getData();
+        if (launchData != null && "carevoice".equals(launchData.getScheme()) && "pair".equals(launchData.getHost())) {
+            pendingPairCode = launchData.getQueryParameter("code") == null ? "" : launchData.getQueryParameter("code");
+            pendingHubUrl = launchData.getQueryParameter("hub") == null ? pendingHubUrl : launchData.getQueryParameter("hub");
+        }
         buildShell();
         if (selectedRole.isEmpty()) {
             showLoginPortal();
@@ -79,23 +87,7 @@ public class MainActivity extends Activity {
         content.setOrientation(LinearLayout.VERTICAL);
         root.addView(content);
 
-        FrameLayout frame = new FrameLayout(this);
-        frame.addView(scrollView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        ImageButton support = new ImageButton(this);
-        support.setImageResource(R.drawable.ic_support_chat);
-        support.setContentDescription("Open CareVoice customer support");
-        support.setColorFilter(Color.WHITE);
-        support.setPadding(dp(15), dp(15), dp(15), dp(15));
-        GradientDrawable supportBackground = new GradientDrawable();
-        supportBackground.setShape(GradientDrawable.OVAL);
-        supportBackground.setColor(Color.rgb(15, 118, 110));
-        support.setBackground(supportBackground);
-        support.setElevation(dp(8));
-        support.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_URL))));
-        FrameLayout.LayoutParams supportParams = new FrameLayout.LayoutParams(dp(58), dp(58), Gravity.END | Gravity.BOTTOM);
-        supportParams.setMargins(dp(16), dp(16), dp(18), dp(22));
-        frame.addView(support, supportParams);
-        setContentView(frame);
+        setContentView(scrollView);
     }
 
     private void showLoginPortal() {
@@ -194,6 +186,7 @@ public class MainActivity extends Activity {
     }
 
     private void showSharedTools() {
+        showDevicePairing();
         content.addView(section("Core Tools"));
         content.addView(actionButton("Generate Session Brief", v -> saveNote("Session brief", "Generated at " + timestamp())));
         content.addView(actionButton("Export Local Notes", v -> shareText("CareVoice notes", prefs.getString("notes", "No notes yet."))));
@@ -208,6 +201,70 @@ public class MainActivity extends Activity {
             showLoginPortal();
         });
         content.addView(clear);
+    }
+
+    private void showDevicePairing() {
+        content.addView(section("Bedside Controller"));
+        String linkedDevice = prefs.getString("linkedDevice", "");
+        if (!linkedDevice.isEmpty()) {
+            addCard("Local device linked", linkedDevice + "\nPatient and doctor routing is supplied by the CareVoice hub.");
+            return;
+        }
+        EditText hub = input("Local hub address");
+        hub.setText(pendingHubUrl);
+        EditText code = input("Six-digit pairing code");
+        code.setText(pendingPairCode);
+        EditText label = input("This device name");
+        label.setText("CareVoice Android App");
+        content.addView(hub);
+        content.addView(code);
+        content.addView(label);
+        content.addView(actionButton("Connect to Bedside Controller", v -> claimDevicePairing(hub.getText().toString(), code.getText().toString(), label.getText().toString())));
+        addCard("Local connection only", "Pairing works only while this app and the CareVoice Raspberry Pi are on the same local network. The public website cannot create device links.");
+    }
+
+    private void claimDevicePairing(String hubValue, String code, String deviceLabel) {
+        String hub = hubValue.trim().replaceAll("/+$", "");
+        if (!code.matches("\\d{6}") || !(hub.startsWith("http://192.168.") || hub.startsWith("http://10.") || hub.startsWith("http://172.") || hub.startsWith("http://carevoice-micro.local") || hub.startsWith("http://localhost"))) {
+            toast("Use a six-digit code and a local CareVoice hub address.");
+            return;
+        }
+        statusText.setText("Connecting to the local CareVoice hub...");
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+            try {
+                connection = (HttpURLConnection) new URL(hub + "/api/local/device-pairing").openConnection();
+                connection.setRequestMethod("POST");
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setDoOutput(true);
+                String payload = "{\"action\":\"claim\",\"code\":\"" + code + "\",\"deviceLabel\":\"" + jsonEscape(deviceLabel.trim()) + "\"}";
+                try (OutputStream output = connection.getOutputStream()) {
+                    output.write(payload.getBytes(StandardCharsets.UTF_8));
+                }
+                int responseCode = connection.getResponseCode();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(responseCode < 400 ? connection.getInputStream() : connection.getErrorStream(), StandardCharsets.UTF_8));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) response.append(line);
+                reader.close();
+                if (responseCode >= 400) throw new Exception("The code expired, was already used, or the hub rejected it.");
+                prefs.edit().putString("linkedDevice", deviceLabel.trim()).putString("hubUrl", hub).apply();
+                runOnUiThread(() -> {
+                    toast("Bedside controller linked");
+                    showWorkspace(selectedRole);
+                });
+            } catch (Exception error) {
+                runOnUiThread(() -> statusText.setText("Could not link: " + error.getMessage()));
+            } finally {
+                if (connection != null) connection.disconnect();
+            }
+        }).start();
+    }
+
+    private String jsonEscape(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private void startVoiceInput() {

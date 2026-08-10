@@ -64,21 +64,24 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   const [profileLoaded, setProfileLoaded] = useState(false);
 
   useEffect(() => {
-    const sessionRole = session?.user?.role || "patient";
-    try {
-      const stored = window.localStorage.getItem(profileKey(session?.user?.email));
-      const parsed: unknown = stored ? JSON.parse(stored) : null;
-      const savedProfile = readCareVoiceProfile(parsed);
-      if (savedProfile) {
-        setProfileState({ ...savedProfile, role: sessionRole });
-        setProfileLoaded(true);
-        return;
+    const timer = window.setTimeout(() => {
+      const sessionRole = session?.user?.role || "patient";
+      try {
+        const stored = window.localStorage.getItem(profileKey(session?.user?.email));
+        const parsed: unknown = stored ? JSON.parse(stored) : null;
+        const savedProfile = readCareVoiceProfile(parsed);
+        if (savedProfile) {
+          setProfileState({ ...savedProfile, role: sessionRole });
+          setProfileLoaded(true);
+          return;
+        }
+      } catch {
+        window.localStorage.removeItem(profileKey(session?.user?.email));
       }
-    } catch {
-      window.localStorage.removeItem(profileKey(session?.user?.email));
-    }
-    setProfileState((current) => ({ ...current, role: sessionRole }));
-    setProfileLoaded(true);
+      setProfileState((current) => ({ ...current, role: sessionRole }));
+      setProfileLoaded(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [session?.user?.email, session?.user?.role]);
 
   const setProfile = async (nextProfile: CareVoiceProfile) => {

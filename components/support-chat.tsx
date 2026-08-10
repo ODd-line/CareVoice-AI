@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FormEvent } from "react";
 import { usePathname } from "next/navigation";
 import { Bot, MessageCircle, Send, X } from "lucide-react";
@@ -11,16 +11,12 @@ type SupportMessage = { role: "user" | "support"; text: string; mode?: string };
 
 export function SupportChat() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("support") === "open");
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<SupportMessage[]>([
     { role: "support", text: "Hi, I’m CareVoice Support. I can help with account setup, rooms, QR codes, voice access, WhatsApp, and role permissions." }
   ]);
-
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("support") === "open") setOpen(true);
-  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

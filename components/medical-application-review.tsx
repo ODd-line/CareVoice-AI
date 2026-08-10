@@ -23,7 +23,10 @@ export function MedicalApplicationReview() {
   }
 
   useEffect(() => {
-    void loadApplications().catch((error: unknown) => setStatus(error instanceof Error ? error.message : "Could not load applications."));
+    const timer = window.setTimeout(() => {
+      void loadApplications().catch((error: unknown) => setStatus(error instanceof Error ? error.message : "Could not load applications."));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function review(application: MedicalProfessionalApplication, nextStatus: Exclude<MedicalApplicationStatus, "pending">) {

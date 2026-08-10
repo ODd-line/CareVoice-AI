@@ -63,7 +63,10 @@ export function AdminOperationsPortal() {
   }
 
   useEffect(() => {
-    void loadOperations().catch((error: unknown) => setStatus(error instanceof Error ? error.message : "Could not load administration data."));
+    const timer = window.setTimeout(() => {
+      void loadOperations().catch((error: unknown) => setStatus(error instanceof Error ? error.message : "Could not load administration data."));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   async function changeAccess(person: AdminPerson, access: "active" | "suspended") {

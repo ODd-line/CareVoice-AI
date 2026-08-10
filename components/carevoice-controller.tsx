@@ -62,8 +62,8 @@ export function CareVoiceController() {
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
     } catch {
-      setStatus("3D preview unavailable");
-      return;
+      const timer = window.setTimeout(() => setStatus("3D preview unavailable"), 0);
+      return () => window.clearTimeout(timer);
     }
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -270,9 +270,10 @@ export function CareVoiceController() {
       frame = requestAnimationFrame(animate);
     };
     frame = requestAnimationFrame(animate);
-    setStatus("Interactive model ready");
+    const statusTimer = window.setTimeout(() => setStatus("Interactive model ready"), 0);
 
     return () => {
+      window.clearTimeout(statusTimer);
       cancelAnimationFrame(frame);
       observer.disconnect();
       controls.dispose();

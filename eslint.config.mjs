@@ -20,6 +20,7 @@ export default defineConfig([
     ".npm-cache/**",
     "node_modules/**",
     "carevoice-android/**",
+    "carevoice-edge/dist/**",
     "app.js",
     "carevoice-micro.js",
     "firebase-config.js",

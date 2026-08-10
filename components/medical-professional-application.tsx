@@ -36,13 +36,15 @@ export function MedicalProfessionalApplicationForm() {
 
   useEffect(() => {
     if (!session?.user?.email) return;
-    setDraft((current) => ({ ...current, legalName: current.legalName || session.user?.name || "", workEmail: current.workEmail || session.user?.email || "" }));
     let active = true;
+    const timer = window.setTimeout(() => {
+      setDraft((current) => ({ ...current, legalName: current.legalName || session.user?.name || "", workEmail: current.workEmail || session.user?.email || "" }));
+    }, 0);
     void fetch("/api/medical-professional-applications", { cache: "no-store" })
       .then((response) => response.json())
       .then((result: { application?: MedicalProfessionalApplication | null }) => { if (active) setApplication(result.application || null); })
       .catch(() => { if (active) setStatus("Application status is temporarily unavailable."); });
-    return () => { active = false; };
+    return () => { active = false; window.clearTimeout(timer); };
   }, [session?.user?.email, session?.user?.name]);
 
   async function submitApplication(event: FormEvent<HTMLFormElement>) {

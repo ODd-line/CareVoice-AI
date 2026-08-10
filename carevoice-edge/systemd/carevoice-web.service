@@ -12,6 +12,7 @@ EnvironmentFile=/etc/carevoice/carevoice.env
 Environment=NODE_ENV=production
 Environment=PORT=3000
 Environment=HOSTNAME=0.0.0.0
+Environment=CAREVOICE_LAN_URL=http://carevoice-micro.local:3000
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=5

@@ -6,6 +6,12 @@ export const metadata: Metadata = {
   description: "The CareVoice home screen for care, connection, and games."
 };
 
-export default function DesktopPage() {
-  return <CareVoiceDesktop />;
+type DesktopPageProps = {
+  searchParams: Promise<{ game?: string; room?: string; pair?: string }>;
+};
+
+export default async function DesktopPage({ searchParams }: DesktopPageProps) {
+  const params = await searchParams;
+  const initialApp = params.game === "mahjong" ? "mahjong" : params.pair ? "settings" : "home";
+  return <CareVoiceDesktop initialApp={initialApp} initialRoomCode={(params.room || "").toUpperCase()} />;
 }

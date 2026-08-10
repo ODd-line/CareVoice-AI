@@ -29,7 +29,9 @@ export default function ProfilePage() {
   const image = user?.image || mockProfile.image;
 
   useEffect(() => {
-    if (profileLoaded) setDraft(profile);
+    if (!profileLoaded) return;
+    const timer = window.setTimeout(() => setDraft(profile), 0);
+    return () => window.clearTimeout(timer);
   }, [profile, profileLoaded]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

@@ -325,6 +325,78 @@
   background: var(--desk-panel);
 }
 
+.roomSetup,
+.raceLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+}
+
+.roomSetup {
+  min-height: 480px;
+  align-items: center;
+  padding: clamp(24px, 5vw, 68px);
+  border: 1px solid var(--desk-line);
+  border-radius: 8px;
+  background: var(--desk-panel);
+}
+
+.roomSetupCopy > svg { width: 56px; height: 56px; color: var(--desk-green); }
+.roomSetupCopy h3 { max-width: 620px; margin: 24px 0 12px; font-size: clamp(28px, 4vw, 48px); line-height: 1.08; }
+.roomSetupCopy p { max-width: 620px; color: var(--desk-muted); font-size: 16px; line-height: 1.6; }
+.roomForm { display: grid; gap: 12px; padding: 22px; border: 1px solid var(--desk-line); border-radius: 8px; background: var(--desk-panel-strong); }
+.roomForm label,
+.pairingForm label { display: grid; gap: 6px; color: var(--desk-muted); font-size: 12px; font-weight: 800; }
+.roomForm input,
+.pairingForm input { min-width: 0; height: 48px; padding: 0 13px; border: 1px solid var(--desk-line); border-radius: 5px; color: var(--desk-ink); background: var(--desk-panel); font: inherit; }
+.roomForm > button,
+.pairingForm > button { min-height: 48px; border: 0; border-radius: 5px; color: white; background: var(--desk-green); font-weight: 800; cursor: pointer; }
+.roomForm > button:disabled,
+.pairingForm > button:disabled { opacity: .5; cursor: not-allowed; }
+.roomForm .secondaryRoomAction { border: 1px solid var(--desk-line); color: var(--desk-ink); background: var(--desk-panel); }
+.roomDivider { position: relative; text-align: center; color: var(--desk-muted); font-size: 11px; }
+.roomDivider::before { position: absolute; z-index: 0; top: 50%; right: 0; left: 0; height: 1px; background: var(--desk-line); content: ""; }
+.roomDivider span { position: relative; z-index: 1; padding: 0 9px; background: var(--desk-panel-strong); }
+
+.raceLayout { grid-template-columns: minmax(0, 1fr) 250px; align-items: start; }
+.raceLayout .mahjongScene { min-height: 520px; }
+.raceLayout .mahjongTable { grid-template-columns: repeat(6, minmax(54px, 82px)); }
+.raceSidebar { display: grid; gap: 14px; }
+.roomQr,
+.leaderboard { padding: 16px; border: 1px solid var(--desk-line); border-radius: 8px; background: var(--desk-panel); }
+.roomQr { text-align: center; }
+.roomQr > svg { max-width: 100%; height: auto; padding: 6px; background: white; }
+.roomQr strong { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.roomQr strong svg,
+.roomQr button svg,
+.leaderboard h3 svg { width: 16px; height: 16px; }
+.roomQr p { margin: 5px 0 12px; color: var(--desk-muted); font-size: 11px; }
+.roomQr button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid var(--desk-line); border-radius: 4px; color: var(--desk-ink); background: var(--desk-panel-strong); cursor: pointer; }
+.leaderboard h3 { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; }
+.leaderboard > div { display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: 7px; min-height: 38px; padding: 0 7px; border-top: 1px solid var(--desk-line); }
+.leaderboard > div > span { color: var(--desk-muted); font-size: 11px; }
+.leaderboard > div > small { font-weight: 800; }
+.leaderboard .currentPlayer { color: var(--desk-green); background: var(--desk-green-soft); }
+
+.pairingPanel { margin-top: 20px; padding: 22px; border: 1px solid var(--desk-line); border-radius: 8px; background: var(--desk-panel); }
+.pairingHeading { display: flex; align-items: center; gap: 14px; }
+.pairingHeading > span { display: grid; width: 48px; aspect-ratio: 1; place-items: center; border-radius: 8px; color: var(--desk-green); background: var(--desk-green-soft); }
+.pairingHeading h2 { margin: 0; font-size: 21px; }
+.pairingHeading p { margin: 4px 0 0; color: var(--desk-muted); }
+.pairingForm { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 12px; margin-top: 20px; }
+.pairingForm > button { display: inline-flex; align-items: center; gap: 7px; padding: 0 16px; }
+.pairingForm svg { width: 18px; height: 18px; }
+.pairingReady { display: grid; grid-template-columns: 180px 1fr; align-items: center; gap: 22px; margin-top: 20px; }
+.pairingReady > div { display: grid; min-height: 180px; place-items: center; background: white; }
+.pairingReady section { display: grid; justify-items: start; }
+.pairingReady small { color: var(--desk-muted); font-weight: 800; text-transform: uppercase; }
+.pairingReady strong { margin: 4px 0; font-size: 40px; letter-spacing: 4px; }
+.pairingReady p { margin: 0; font-weight: 800; }
+.pairingReady p span { margin: 0 7px; color: var(--desk-muted); font-weight: 400; }
+.pairingReady em { display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; color: var(--desk-green); font-style: normal; }
+.pairingReady em svg { width: 18px; height: 18px; }
+.pairingStatus { margin: 16px 0 0; color: var(--desk-muted); font-size: 12px; }
+
 .todayStrip > div {
   display: flex;
   align-items: center;
@@ -779,6 +851,10 @@
   .mahjongTable { grid-template-columns: repeat(8, minmax(38px, 1fr)); gap: 7px; }
   .mahjongScene { min-height: 390px; padding: 15px; }
   .memoryBoard { grid-template-columns: repeat(3, 1fr); }
+  .roomSetup,
+  .raceLayout { grid-template-columns: 1fr; }
+  .raceSidebar { grid-template-columns: 1fr 1fr; }
+  .pairingForm { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
@@ -809,6 +885,14 @@
   .memoryCard { min-height: 110px; }
   .contact { grid-template-columns: 70px 1fr; padding: 24px 18px; }
   .contact > span { width: 68px; }
+  .roomSetup { min-height: 0; padding: 20px; }
+  .roomSetupCopy h3 { font-size: 30px; }
+  .raceSidebar { grid-template-columns: 1fr; }
+  .raceLayout .mahjongTable { width: 390px; grid-template-columns: repeat(6, 56px); }
+  .pairingPanel { padding: 16px; }
+  .pairingReady { grid-template-columns: 1fr; }
+  .pairingReady section { justify-items: center; text-align: center; }
+  .pairingReady strong { font-size: 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
